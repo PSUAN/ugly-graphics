@@ -1,0 +1,12 @@
+[package]
+name = "ugly"
+version = "0.1.0"
+edition = "2024"
+authors = ["PSUAN collective", "Hara Red <rtc6fg4.fejg2@gmail.com>"]
+description = "Ugly graphics on CPU"
+license = "MIT"
+keywords = ["graphics"]
+readme = "README.md"
+
+[features]
+default = []
