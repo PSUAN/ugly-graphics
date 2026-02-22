@@ -20,7 +20,7 @@ where
     }
 }
 
-pub trait Image<P> {
+pub trait Image<P>: Dimensions {
     fn pixel(&self, position: (i32, i32)) -> Option<&P>;
 }
 
@@ -42,7 +42,7 @@ where
     }
 }
 
-pub trait ImageMut<P> {
+pub trait ImageMut<P>: Dimensions {
     fn set_pixel(&mut self, position: (i32, i32), value: P);
     fn modify_pixel(&mut self, position: (i32, i32), function: &dyn Fn((i32, i32), P) -> P);
 
@@ -91,6 +91,3 @@ where
         ImageMut::modify(*self, function);
     }
 }
-
-pub trait FullFeaturedImage<P>: Dimensions + Image<P> + ImageMut<P> {}
-impl<T, P> FullFeaturedImage<P> for T where T: Dimensions + Image<P> + ImageMut<P> {}

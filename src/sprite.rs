@@ -1,5 +1,6 @@
 use crate::image::{Dimensions, Image, ImageMut};
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Sprite<C, const W: usize, const H: usize> {
     data: [[C; W]; H],
 }

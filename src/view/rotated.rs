@@ -1,5 +1,6 @@
 use crate::image::{Dimensions, Image};
 
+#[derive(Clone, Copy, Debug)]
 pub enum Rotation {
     Clockwise,
     CounterClockwise,
