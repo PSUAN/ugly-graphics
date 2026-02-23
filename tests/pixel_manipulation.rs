@@ -31,9 +31,9 @@ fn stamp_is_applied() {
     let mut painter = Painter::new(&mut sprite);
 
     let stamp = Sprite::from_raw([
-        [true, true, false],
-        [false, false, true],
-        [false, true, false],
+        [true, true, false, false],
+        [false, false, true, false],
+        [false, true, false, false],
     ]);
     let rotated = Rotated::clockwise(&stamp);
 
@@ -47,7 +47,7 @@ fn stamp_is_applied() {
         [0x10, 0x10, 0x08, 0x08, 0x18, 0x10],
         [0x10, 0x10, 0x18, 0x08, 0x18, 0x10],
         [0x10, 0x10, 0x08, 0x18, 0x08, 0x10],
-        [0x10, 0x10, 0x10, 0x10, 0x10, 0x10],
+        [0x10, 0x10, 0x08, 0x08, 0x08, 0x10],
     ]);
 
     assert_eq!(sprite, expected);
