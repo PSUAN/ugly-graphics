@@ -1,7 +1,7 @@
+use ugly::image::sprite::Sprite;
 use ugly::operation::pixel::Pixel;
 use ugly::operation::stamp::Stamp;
 use ugly::painter::Painter;
-use ugly::sprite::Sprite;
 use ugly::strategy::{IntoApply, IntoOverwrite};
 use ugly::view::flipped::Flipped;
 use ugly::view::rotated::Rotated;

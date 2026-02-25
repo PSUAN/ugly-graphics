@@ -26,7 +26,7 @@ where
 }
 
 impl<T> Flipped<T> {
-    pub fn new(direction: Flip, target: T) -> Self {
+    pub fn new(target: T, direction: Flip) -> Self {
         Self { direction, target }
     }
 
@@ -58,7 +58,7 @@ impl<T, C> Image<C> for Flipped<T>
 where
     T: Image<C> + Dimensions,
 {
-    fn pixel(&self, position: (i32, i32)) -> Option<&C> {
+    fn pixel(&self, position: (i32, i32)) -> Option<C> {
         let position = self.transformer()(position);
         self.target.pixel(position)
     }
@@ -125,7 +125,7 @@ where
 
 #[cfg(test)]
 mod test {
-    use crate::sprite::Sprite;
+    use crate::image::sprite::Sprite;
 
     use super::*;
 
@@ -137,9 +137,9 @@ mod test {
         ]);
         let flipped = Flipped::horizontal(&sprite);
 
-        assert_eq!(flipped.pixel((0, 0)).copied(), Some(0x02));
-        assert_eq!(flipped.pixel((1, 1)).copied(), Some(0x11));
-        assert_eq!(flipped.pixel((2, 2)).copied(), None);
+        assert_eq!(flipped.pixel((0, 0)), Some(0x02));
+        assert_eq!(flipped.pixel((1, 1)), Some(0x11));
+        assert_eq!(flipped.pixel((2, 2)), None);
     }
 
     #[test]
@@ -150,9 +150,9 @@ mod test {
         ]);
         let flipped = Flipped::horizontal(&mut sprite);
 
-        assert_eq!(flipped.pixel((0, 0)).copied(), Some(0x02));
-        assert_eq!(flipped.pixel((1, 1)).copied(), Some(0x11));
-        assert_eq!(flipped.pixel((2, 2)).copied(), None);
+        assert_eq!(flipped.pixel((0, 0)), Some(0x02));
+        assert_eq!(flipped.pixel((1, 1)), Some(0x11));
+        assert_eq!(flipped.pixel((2, 2)), None);
     }
 
     #[test]
@@ -168,7 +168,7 @@ mod test {
         for x in 0..width {
             for y in 0..height {
                 let expected = WIDTH as u8 - x as u8 + y as u8 - 1;
-                assert_eq!(sprite.pixel((x as _, y as _)).copied(), Some(expected));
+                assert_eq!(sprite.pixel((x as _, y as _)), Some(expected));
             }
         }
     }

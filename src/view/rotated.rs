@@ -25,7 +25,7 @@ where
 }
 
 impl<T> Rotated<T> {
-    pub fn new(rotation: Rotation, target: T) -> Self {
+    pub fn new(target: T, rotation: Rotation) -> Self {
         Self { rotation, target }
     }
 
@@ -58,7 +58,7 @@ impl<T, C> Image<C> for Rotated<T>
 where
     T: Image<C> + Dimensions,
 {
-    fn pixel(&self, position: (i32, i32)) -> Option<&C> {
+    fn pixel(&self, position: (i32, i32)) -> Option<C> {
         let position = self.transform(position);
         self.target.pixel(position)
     }
@@ -66,7 +66,7 @@ where
 
 #[cfg(test)]
 mod test {
-    use crate::sprite::Sprite;
+    use crate::image::sprite::Sprite;
 
     use super::*;
 
@@ -78,9 +78,9 @@ mod test {
         ]);
         let rotated = Rotated::clockwise(&sprite);
 
-        assert_eq!(rotated.pixel((0, 0)).copied(), Some(0x10));
-        assert_eq!(rotated.pixel((1, 1)).copied(), Some(0x01));
-        assert_eq!(rotated.pixel((2, 2)).copied(), None);
+        assert_eq!(rotated.pixel((0, 0)), Some(0x10));
+        assert_eq!(rotated.pixel((1, 1)), Some(0x01));
+        assert_eq!(rotated.pixel((2, 2)), None);
     }
 
     #[test]
@@ -91,8 +91,8 @@ mod test {
         ]);
         let rotated = Rotated::clockwise(&mut sprite);
 
-        assert_eq!(rotated.pixel((0, 0)).copied(), Some(0x10));
-        assert_eq!(rotated.pixel((1, 1)).copied(), Some(0x01));
-        assert_eq!(rotated.pixel((2, 2)).copied(), None);
+        assert_eq!(rotated.pixel((0, 0)), Some(0x10));
+        assert_eq!(rotated.pixel((1, 1)), Some(0x01));
+        assert_eq!(rotated.pixel((2, 2)), None);
     }
 }

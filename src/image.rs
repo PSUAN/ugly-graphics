@@ -1,3 +1,5 @@
+pub mod sprite;
+
 pub trait Dimensions {
     fn dimensions(&self) -> (i32, i32);
 }
@@ -21,14 +23,14 @@ where
 }
 
 pub trait Image<P>: Dimensions {
-    fn pixel(&self, position: (i32, i32)) -> Option<&P>;
+    fn pixel(&self, position: (i32, i32)) -> Option<P>;
 }
 
 impl<T, P> Image<P> for &T
 where
     T: Image<P>,
 {
-    fn pixel(&self, position: (i32, i32)) -> Option<&P> {
+    fn pixel(&self, position: (i32, i32)) -> Option<P> {
         Image::pixel(*self, position)
     }
 }
@@ -37,7 +39,7 @@ impl<T, P> Image<P> for &mut T
 where
     T: Image<P>,
 {
-    fn pixel(&self, position: (i32, i32)) -> Option<&P> {
+    fn pixel(&self, position: (i32, i32)) -> Option<P> {
         Image::pixel(*self, position)
     }
 }

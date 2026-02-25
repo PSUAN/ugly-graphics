@@ -20,7 +20,7 @@ impl<'a, P> Painter<'a, P> {
         operation.draw_on(self)
     }
 
-    pub fn pixel(&mut self, position: (i32, i32), strategy: Strategy<'_, P>) {
+    pub fn pixel(&mut self, position: (i32, i32), strategy: Strategy<P>) {
         match strategy {
             Strategy::Overwrite(value) => self.target.set_pixel(position, value),
             Strategy::Apply(function) => self.target.modify_pixel(position, function),
