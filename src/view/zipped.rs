@@ -16,7 +16,7 @@ where
     A: Dimensions,
     B: Dimensions,
 {
-    fn dimensions(&self) -> (i32, i32) {
+    fn dimensions(&self) -> (u32, u32) {
         let (first_width, first_height) = self.first.dimensions();
         let (second_width, second_height) = self.second.dimensions();
         (

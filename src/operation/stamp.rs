@@ -31,9 +31,9 @@ where
         let (x, y) = self.position;
         let (width, height) = self.stamp.dimensions();
 
-        for stamp_y in 0..height {
+        for stamp_y in 0..height as i32 {
             let target_y = y + stamp_y;
-            for stamp_x in 0..width {
+            for stamp_x in 0..width as i32 {
                 if let Some(stamp_pixel) = self.stamp.pixel((stamp_x, stamp_y)) {
                     let target_x = x + stamp_x;
 

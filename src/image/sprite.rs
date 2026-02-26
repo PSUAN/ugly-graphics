@@ -21,7 +21,7 @@ impl<P, const W: usize, const H: usize> Sprite<P, W, H> {
 }
 
 impl<P, const W: usize, const H: usize> Dimensions for Sprite<P, W, H> {
-    fn dimensions(&self) -> (i32, i32) {
+    fn dimensions(&self) -> (u32, u32) {
         (W as _, H as _)
     }
 }
@@ -79,14 +79,14 @@ where
     }
 
     fn modify_horizontal_line(&mut self, (x, y): (i32, i32), total: u32, function: Modify<P>) {
-        let (x, plus) = if x < 0 {
+        let (x, total) = if x < 0 {
             (0, total - (-x) as u32)
         } else {
             (x, total)
         };
 
         let indices = (usize::try_from(x), usize::try_from(y));
-        let total = usize::try_from(plus);
+        let total = usize::try_from(total);
         if let (Ok(index_x), Ok(index_y)) = indices
             && let Ok(total) = total
             && let Some(row) = self.data.get_mut(index_y)
@@ -140,6 +140,34 @@ mod test {
     fn horizontal_line_is_being_set_properly() {
         let mut sprite = Sprite::<u8, 6, 3>::from_copies(0x00);
         sprite.set_horizontal_line((1, 1), 3, 0x80);
+
+        let expected =
+            Sprite::from_raw([[0x00; 6], [0x00, 0x80, 0x80, 0x80, 0x00, 0x00], [0x00; 6]]);
+
+        assert_eq!(sprite, expected);
+    }
+
+    #[test]
+    fn horizontal_line_is_being_modified_even_out_of_bounds() {
+        let mut sprite = Sprite::<u8, 4, 3>::from_copies(0x00);
+        sprite.modify_horizontal_line((-3, 1), 5, &|_, _| 0xff);
+
+        let expected = Sprite::from_raw([[0x00; 4], [0xff, 0xff, 0x00, 0x00], [0x00; 4]]);
+
+        assert_eq!(sprite, expected);
+
+        let mut sprite = Sprite::<u8, 4, 3>::from_copies(0x00);
+        sprite.modify_horizontal_line((2, 1), 5, &|_, _| 0xff);
+
+        let expected = Sprite::from_raw([[0x00; 4], [0x00, 0x00, 0xff, 0xff], [0x00; 4]]);
+
+        assert_eq!(sprite, expected);
+    }
+
+    #[test]
+    fn horizontal_line_is_being_modified_properly() {
+        let mut sprite = Sprite::<u8, 6, 3>::from_copies(0x00);
+        sprite.modify_horizontal_line((1, 1), 3, &|_, _| 0x80);
 
         let expected =
             Sprite::from_raw([[0x00; 6], [0x00, 0x80, 0x80, 0x80, 0x00, 0x00], [0x00; 6]]);

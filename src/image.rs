@@ -3,14 +3,14 @@ use crate::strategy::Modify;
 pub mod sprite;
 
 pub trait Dimensions {
-    fn dimensions(&self) -> (i32, i32);
+    fn dimensions(&self) -> (u32, u32);
 }
 
 impl<T> Dimensions for &T
 where
     T: Dimensions,
 {
-    fn dimensions(&self) -> (i32, i32) {
+    fn dimensions(&self) -> (u32, u32) {
         Dimensions::dimensions(*self)
     }
 }
@@ -19,7 +19,7 @@ impl<T> Dimensions for &mut T
 where
     T: Dimensions,
 {
-    fn dimensions(&self) -> (i32, i32) {
+    fn dimensions(&self) -> (u32, u32) {
         Dimensions::dimensions(*self)
     }
 }

@@ -11,17 +11,10 @@ pub struct Flipped<T> {
     target: T,
 }
 
-impl<T> Flipped<T>
-where
-    T: Dimensions,
-{
-    fn transformer(&self) -> impl Fn((i32, i32)) -> (i32, i32) + 'static {
-        let (width, height) = self.target.dimensions();
-        let direction = self.direction;
-        move |(x, y)| match direction {
-            Flip::Horizontal => (width - 1 - x, y),
-            Flip::Vertical => (x, height - 1 - y),
-        }
+fn transform(direction: Flip, (width, height): (u32, u32), (x, y): (i32, i32)) -> (i32, i32) {
+    match direction {
+        Flip::Horizontal => (width as i32 - 1 - x, y),
+        Flip::Vertical => (x, height as i32 - 1 - y),
     }
 }
 
@@ -49,7 +42,7 @@ impl<T> Dimensions for Flipped<T>
 where
     T: Dimensions,
 {
-    fn dimensions(&self) -> (i32, i32) {
+    fn dimensions(&self) -> (u32, u32) {
         self.target.dimensions()
     }
 }
@@ -59,7 +52,7 @@ where
     T: Image<C> + Dimensions,
 {
     fn pixel(&self, position: (i32, i32)) -> Option<C> {
-        let position = self.transformer()(position);
+        let position = transform(self.direction, self.target.dimensions(), position);
         self.target.pixel(position)
     }
 }
@@ -69,21 +62,23 @@ where
     T: ImageMut<C> + Dimensions,
 {
     fn set_pixel(&mut self, position: (i32, i32), value: C) {
-        let position = self.transformer()(position);
+        let position = transform(self.direction, self.target.dimensions(), position);
         self.target.set_pixel(position, value);
     }
 
     fn modify_pixel(&mut self, position: (i32, i32), function: &dyn Fn((i32, i32), C) -> C) {
-        let transformer = self.transformer();
-        let position = transformer(position);
+        let direction = self.direction;
+        let dimensions = self.target.dimensions();
+        let position = transform(direction, dimensions, position);
+
         self.target.modify_pixel(position, &move |position, pixel| {
-            let position = transformer(position);
+            let position = transform(direction, dimensions, position);
             function(position, pixel)
         });
     }
 
     fn set_horizontal_line(&mut self, position: (i32, i32), total: u32, value: C) {
-        let (x, y) = self.transformer()(position);
+        let (x, y) = transform(self.direction, self.target.dimensions(), position);
         let x = match self.direction {
             Flip::Horizontal => x - total as i32 + 1,
             Flip::Vertical => x,
@@ -97,15 +92,17 @@ where
         total: u32,
         function: &dyn Fn((i32, i32), C) -> C,
     ) {
-        let transformer = self.transformer();
-        let (x, y) = transformer(position);
+        let direction = self.direction;
+        let dimensions = self.target.dimensions();
+        let (x, y) = transform(direction, dimensions, position);
         let x = match self.direction {
             Flip::Horizontal => x - total as i32 + 1,
             Flip::Vertical => x,
         };
+
         self.target
             .modify_horizontal_line((x, y), total, &move |position, pixel| {
-                let position = transformer(position);
+                let position = transform(direction, dimensions, position);
                 function(position, pixel)
             });
     }
@@ -115,9 +112,10 @@ where
     }
 
     fn modify(&mut self, function: &dyn Fn((i32, i32), C) -> C) {
-        let transformer = self.transformer();
+        let direction = self.direction;
+        let dimensions = self.target.dimensions();
         self.target.modify(&move |position, pixel| {
-            let position = transformer(position);
+            let position = transform(direction, dimensions, position);
             function(position, pixel)
         });
     }
