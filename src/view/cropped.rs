@@ -10,6 +10,10 @@ impl<T> Cropped<T> {
     pub fn new(target: T, dimensions: (u32, u32)) -> Self {
         Self { dimensions, target }
     }
+
+    pub fn extract(self) -> T {
+        self.target
+    }
 }
 
 fn crop_position(dimensions: (u32, u32), (x, y): (i32, i32)) -> Option<(i32, i32)> {

@@ -9,6 +9,10 @@ impl<A, B> Zipped<A, B> {
     pub fn new(first: A, second: B) -> Self {
         Self { first, second }
     }
+
+    pub fn extract(self) -> (A, B) {
+        (self.first, self.second)
+    }
 }
 
 impl<A, B> Dimensions for Zipped<A, B>
