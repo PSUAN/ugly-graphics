@@ -1,6 +1,8 @@
+pub type Modify<'a, P> = &'a dyn Fn((i32, i32), P) -> P;
+
 pub enum Strategy<'a, P> {
     Overwrite(P),
-    Apply(&'a dyn Fn((i32, i32), P) -> P),
+    Apply(Modify<'a, P>),
 }
 
 pub trait IntoOverwrite: Sized {

@@ -1,4 +1,5 @@
 use crate::image::{Dimensions, Image, ImageMut};
+use crate::strategy::Modify;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Sprite<P, const W: usize, const H: usize> {
@@ -49,7 +50,7 @@ where
         }
     }
 
-    fn modify_pixel(&mut self, (x, y): (i32, i32), function: &dyn Fn((i32, i32), P) -> P) {
+    fn modify_pixel(&mut self, (x, y): (i32, i32), function: Modify<P>) {
         let indices = (usize::try_from(x), usize::try_from(y));
         if let (Ok(index_x), Ok(index_y)) = indices
             && let Some(row) = self.data.get_mut(index_y)
@@ -59,17 +60,17 @@ where
         }
     }
 
-    fn set_horizontal_line(&mut self, (x, y): (i32, i32), plus: u32, value: P) {
-        let (x, plus) = if x < 0 {
-            (0, plus - (-x) as u32)
+    fn set_horizontal_line(&mut self, (x, y): (i32, i32), total: u32, value: P) {
+        let (x, total) = if x < 0 {
+            (0, total - (-x) as u32)
         } else {
-            (x, plus)
+            (x, total)
         };
 
         let indices = (usize::try_from(x), usize::try_from(y));
-        let plus = usize::try_from(plus);
+        let total = usize::try_from(total);
         if let (Ok(index_x), Ok(index_y)) = indices
-            && let Ok(plus) = plus
+            && let Ok(plus) = total
             && let Some(row) = self.data.get_mut(index_y)
             && let Some(slice) = row.get_mut(index_x..(index_x + plus).min(W as _))
         {
@@ -77,24 +78,19 @@ where
         }
     }
 
-    fn modify_horizontal_line(
-        &mut self,
-        (x, y): (i32, i32),
-        plus: u32,
-        function: &dyn Fn((i32, i32), P) -> P,
-    ) {
+    fn modify_horizontal_line(&mut self, (x, y): (i32, i32), total: u32, function: Modify<P>) {
         let (x, plus) = if x < 0 {
-            (0, plus - (-x) as u32)
+            (0, total - (-x) as u32)
         } else {
-            (x, plus)
+            (x, total)
         };
 
         let indices = (usize::try_from(x), usize::try_from(y));
-        let plus = usize::try_from(plus);
+        let total = usize::try_from(plus);
         if let (Ok(index_x), Ok(index_y)) = indices
-            && let Ok(plus) = plus
+            && let Ok(total) = total
             && let Some(row) = self.data.get_mut(index_y)
-            && let Some(slice) = row.get_mut(index_x..(index_x + plus).min(W as _))
+            && let Some(slice) = row.get_mut(index_x..(index_x + total).min(W as _))
         {
             slice.iter_mut().enumerate().for_each(|(index, pixel)| {
                 *pixel = function(((index + index_x) as _, y), pixel.clone());
@@ -108,7 +104,7 @@ where
         }
     }
 
-    fn modify(&mut self, function: &dyn Fn((i32, i32), P) -> P) {
+    fn modify(&mut self, function: Modify<P>) {
         for (y, row) in self.data.iter_mut().enumerate() {
             let y = y as _;
 
@@ -136,6 +132,17 @@ mod test {
         sprite.set_horizontal_line((2, 1), 5, 0xff);
 
         let expected = Sprite::from_raw([[0x00; 4], [0x00, 0x00, 0xff, 0xff], [0x00; 4]]);
+
+        assert_eq!(sprite, expected);
+    }
+
+    #[test]
+    fn horizontal_line_is_being_set_properly() {
+        let mut sprite = Sprite::<u8, 6, 3>::from_copies(0x00);
+        sprite.set_horizontal_line((1, 1), 3, 0x80);
+
+        let expected =
+            Sprite::from_raw([[0x00; 6], [0x00, 0x80, 0x80, 0x80, 0x00, 0x00], [0x00; 6]]);
 
         assert_eq!(sprite, expected);
     }

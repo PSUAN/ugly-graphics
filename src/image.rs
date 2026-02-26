@@ -1,3 +1,5 @@
+use crate::strategy::Modify;
+
 pub mod sprite;
 
 pub trait Dimensions {
@@ -46,18 +48,13 @@ where
 
 pub trait ImageMut<P>: Dimensions {
     fn set_pixel(&mut self, position: (i32, i32), value: P);
-    fn modify_pixel(&mut self, position: (i32, i32), function: &dyn Fn((i32, i32), P) -> P);
+    fn modify_pixel(&mut self, position: (i32, i32), function: Modify<P>);
 
-    fn set_horizontal_line(&mut self, position: (i32, i32), plus: u32, value: P);
-    fn modify_horizontal_line(
-        &mut self,
-        position: (i32, i32),
-        plus: u32,
-        function: &dyn Fn((i32, i32), P) -> P,
-    );
+    fn set_horizontal_line(&mut self, position: (i32, i32), total: u32, value: P);
+    fn modify_horizontal_line(&mut self, position: (i32, i32), total: u32, function: Modify<P>);
 
     fn set(&mut self, value: P);
-    fn modify(&mut self, function: &dyn Fn((i32, i32), P) -> P);
+    fn modify(&mut self, function: Modify<P>);
 }
 
 impl<T, P> ImageMut<P> for &mut T
@@ -68,7 +65,7 @@ where
         ImageMut::set_pixel(*self, position, value);
     }
 
-    fn modify_pixel(&mut self, position: (i32, i32), function: &dyn Fn((i32, i32), P) -> P) {
+    fn modify_pixel(&mut self, position: (i32, i32), function: Modify<P>) {
         ImageMut::modify_pixel(*self, position, function);
     }
 
@@ -76,12 +73,7 @@ where
         ImageMut::set_horizontal_line(*self, position, plus, value);
     }
 
-    fn modify_horizontal_line(
-        &mut self,
-        position: (i32, i32),
-        plus: u32,
-        function: &dyn Fn((i32, i32), P) -> P,
-    ) {
+    fn modify_horizontal_line(&mut self, position: (i32, i32), plus: u32, function: Modify<P>) {
         ImageMut::modify_horizontal_line(*self, position, plus, function);
     }
 
@@ -89,7 +81,7 @@ where
         ImageMut::set(*self, value);
     }
 
-    fn modify(&mut self, function: &dyn Fn((i32, i32), P) -> P) {
+    fn modify(&mut self, function: Modify<P>) {
         ImageMut::modify(*self, function);
     }
 }

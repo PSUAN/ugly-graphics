@@ -82,29 +82,29 @@ where
         });
     }
 
-    fn set_horizontal_line(&mut self, position: (i32, i32), plus: u32, value: C) {
+    fn set_horizontal_line(&mut self, position: (i32, i32), total: u32, value: C) {
         let (x, y) = self.transformer()(position);
         let x = match self.direction {
-            Flip::Horizontal => x - plus as i32,
+            Flip::Horizontal => x - total as i32 + 1,
             Flip::Vertical => x,
         };
-        self.target.set_horizontal_line((x, y), plus, value);
+        self.target.set_horizontal_line((x, y), total, value);
     }
 
     fn modify_horizontal_line(
         &mut self,
         position: (i32, i32),
-        plus: u32,
+        total: u32,
         function: &dyn Fn((i32, i32), C) -> C,
     ) {
         let transformer = self.transformer();
         let (x, y) = transformer(position);
         let x = match self.direction {
-            Flip::Horizontal => x - plus as i32,
+            Flip::Horizontal => x - total as i32 + 1,
             Flip::Vertical => x,
         };
         self.target
-            .modify_horizontal_line((x, y), plus, &move |position, pixel| {
+            .modify_horizontal_line((x, y), total, &move |position, pixel| {
                 let position = transformer(position);
                 function(position, pixel)
             });
@@ -153,6 +153,25 @@ mod test {
         assert_eq!(flipped.pixel((0, 0)), Some(0x02));
         assert_eq!(flipped.pixel((1, 1)), Some(0x11));
         assert_eq!(flipped.pixel((2, 2)), None);
+    }
+
+    #[test]
+    fn flip_set_line_works_properly() {
+        let mut sprite = Sprite::<u8, 4, 4>::from_copies(0x00);
+        let mut flipped = Flipped::horizontal(&mut sprite);
+
+        flipped.set_horizontal_line((-2, 1), 4, 0x20);
+        flipped.set_horizontal_line((2, 2), 4, 0x30);
+        flipped.set_horizontal_line((1, 3), 2, 0x40);
+
+        let expected = Sprite::from_raw([
+            [0x00; 4],
+            [0x00, 0x00, 0x20, 0x20],
+            [0x30, 0x30, 0x00, 0x00],
+            [0x00, 0x40, 0x40, 0x00],
+        ]);
+
+        assert_eq!(sprite, expected);
     }
 
     #[test]

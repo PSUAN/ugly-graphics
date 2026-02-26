@@ -1,4 +1,5 @@
 use crate::image::{Dimensions, Image, ImageMut};
+use crate::strategy::Modify;
 
 pub struct Cropped<T> {
     dimensions: (i32, i32),
@@ -54,7 +55,7 @@ where
         }
     }
 
-    fn modify_pixel(&mut self, position: (i32, i32), function: &dyn Fn((i32, i32), P) -> P) {
+    fn modify_pixel(&mut self, position: (i32, i32), function: Modify<P>) {
         if let Some(position) = self.crop_position(position) {
             self.target.modify_pixel(position, function);
         }
@@ -66,7 +67,10 @@ where
         if let Some((x, y)) = self.crop_position(position) {
             let (x, plus) = if x < 0 {
                 (0, plus - (-x) as u32)
-            } else if x + plus as i32 >= cropped_width {
+            } else {
+                (x, plus)
+            };
+            let (x, plus) = if x + plus as i32 >= cropped_width {
                 (x, (cropped_width - x) as u32)
             } else {
                 (x, plus)
@@ -75,18 +79,16 @@ where
         }
     }
 
-    fn modify_horizontal_line(
-        &mut self,
-        position: (i32, i32),
-        plus: u32,
-        function: &dyn Fn((i32, i32), P) -> P,
-    ) {
+    fn modify_horizontal_line(&mut self, position: (i32, i32), plus: u32, function: Modify<P>) {
         let cropped_width = self.dimensions.0;
 
         if let Some((x, y)) = self.crop_position(position) {
             let (x, plus) = if x < 0 {
                 (0, plus - (-x) as u32)
-            } else if x + plus as i32 >= cropped_width {
+            } else {
+                (x, plus)
+            };
+            let (x, plus) = if x + plus as i32 >= cropped_width {
                 (x, (cropped_width - x) as u32)
             } else {
                 (x, plus)
@@ -106,7 +108,7 @@ where
         }
     }
 
-    fn modify(&mut self, function: &dyn Fn((i32, i32), P) -> P) {
+    fn modify(&mut self, function: Modify<P>) {
         let (cropped_width, cropped_height) = self.dimensions;
 
         if let Ok(width) = u32::try_from(cropped_width) {
@@ -143,6 +145,22 @@ mod test {
             [0x01, 0x80, 0x80, 0x80, 0x00],
             [0x02, 0x03, 0x04, 0x05, 0x00],
             [0x03, 0x04, 0x05, 0xff, 0x00],
+            [0x00; 5],
+        ]);
+        assert_eq!(sprite, expected);
+    }
+
+    #[test]
+    fn wide_set_in_cropped_works() {
+        let mut sprite = Sprite::<u8, 5, 5>::from_copies(0x00);
+        let mut cropped = Cropped::new(&mut sprite, (4, 4));
+        cropped.set_horizontal_line((-2, 1), 16, 0x40);
+
+        let expected = Sprite::from_raw([
+            [0x00; 5],
+            [0x40, 0x40, 0x40, 0x40, 0x00],
+            [0x00; 5],
+            [0x00; 5],
             [0x00; 5],
         ]);
         assert_eq!(sprite, expected);
