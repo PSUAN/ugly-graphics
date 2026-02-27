@@ -18,11 +18,13 @@ impl<'a, P> Pixel<'a, P> {
     }
 }
 
-impl<'a, P> Operation<P> for Pixel<'a, P> {
+impl<'a, P> Operation<P> for Pixel<'a, P>
+where
+    P: Clone,
+{
     type Output = ();
 
-    fn draw_on(self, painter: &mut Painter<'_, P>) -> Option<Self::Output> {
-        painter.pixel(self.position, self.value);
-        Some(())
+    fn draw_on(self, painter: &mut Painter<'_, P>) -> Self::Output {
+        painter.pixel(self.position, &self.value);
     }
 }

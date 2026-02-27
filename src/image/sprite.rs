@@ -70,9 +70,9 @@ where
         let indices = (usize::try_from(x), usize::try_from(y));
         let total = usize::try_from(total);
         if let (Ok(index_x), Ok(index_y)) = indices
-            && let Ok(plus) = total
+            && let Ok(total) = total
             && let Some(row) = self.data.get_mut(index_y)
-            && let Some(slice) = row.get_mut(index_x..(index_x + plus).min(W as _))
+            && let Some(slice) = row.get_mut(index_x..(index_x + total).min(W as _))
         {
             slice.fill_with(|| value.clone());
         }

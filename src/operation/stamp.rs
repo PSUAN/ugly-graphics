@@ -23,11 +23,12 @@ impl<'a, P, S> Stamp<'a, P, S> {
 
 impl<'a, P, S> Operation<P> for Stamp<'a, P, S>
 where
+    P: Clone,
     S: Clone,
 {
     type Output = ();
 
-    fn draw_on(self, painter: &mut Painter<'_, P>) -> Option<Self::Output> {
+    fn draw_on(self, painter: &mut Painter<'_, P>) -> Self::Output {
         let (x, y) = self.position;
         let (width, height) = self.stamp.dimensions();
 
@@ -45,10 +46,9 @@ where
                             stamp_pixel.clone(),
                         )
                     };
-                    painter.pixel((target_x, target_y), strategy.apply());
+                    painter.pixel((target_x, target_y), &strategy.apply());
                 }
             }
         }
-        Some(())
     }
 }
