@@ -1,6 +1,8 @@
+use ugly::image::Image;
 use ugly::image::sprite::Sprite;
 use ugly::operation::pixel::Pixel;
 use ugly::operation::scanline::line::Line;
+use ugly::operation::scanline::triangle::filled::overlapping::OverlappingTriangle;
 use ugly::operation::stamp::Stamp;
 use ugly::painter::Painter;
 use ugly::strategy::{IntoApply, IntoOverwrite};
@@ -79,4 +81,45 @@ fn line_is_applied() {
         [0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0e],
     ]);
     assert_eq!(sprite, expected);
+}
+
+#[test]
+fn triangle_is_applied() {
+    const WIDTH: usize = 32;
+    const HEIGHT: usize = 32;
+
+    let (a, b, c) = ((1, -10), (24, 4), (6, 31));
+
+    let mut filled_sprite = Sprite::<u8, WIDTH, HEIGHT>::from_copies(0x00);
+    let mut painter = Painter::new(&mut filled_sprite);
+    painter.draw(OverlappingTriangle::new([a, b, c], 0xff.overwrite()));
+
+    let mut lines_sprite = Sprite::<u8, WIDTH, HEIGHT>::from_copies(0x00);
+    let mut painter = Painter::new(&mut lines_sprite);
+    painter.draw(Line::new(a, b, 0xff.overwrite()));
+    painter.draw(Line::new(b, c, 0xff.overwrite()));
+    painter.draw(Line::new(a, c, 0xff.overwrite()));
+
+    for y in 0..HEIGHT {
+        for x in 0..WIDTH {
+            let filled_sprite_pixel = filled_sprite.pixel((x as i32, y as i32)).unwrap();
+
+            if filled_sprite_pixel == 0x00 {
+                let lines_sprite_pixel = lines_sprite.pixel((x as i32, y as i32)).unwrap();
+                if lines_sprite_pixel != 0x00 {
+                    panic!();
+                }
+            } else {
+                for x in 0..=WIDTH {
+                    if x == WIDTH {
+                        panic!();
+                    }
+                    let lines_sprite_pixel = lines_sprite.pixel((x as i32, y as i32)).unwrap();
+                    if lines_sprite_pixel == 0xff {
+                        break;
+                    }
+                }
+            }
+        }
+    }
 }

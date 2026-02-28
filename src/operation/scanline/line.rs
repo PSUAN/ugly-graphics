@@ -15,25 +15,6 @@ impl<'a, P> Line<'a, P> {
     }
 }
 
-fn merge_scans(first: (i32, u32), second: (i32, u32)) -> (i32, u32) {
-    let start = first.0.min(second.0);
-    let end = (first.0 + first.1 as i32).max(second.0 + second.1 as i32);
-    (start, (end - start) as u32)
-}
-
-fn clamp_scan((start, total): (i32, u32), end: u32) -> (i32, u32) {
-    let (start, total) = if start < 0 {
-        (0, total - (-start) as u32)
-    } else {
-        (start, total)
-    };
-    if start + total as i32 >= end as i32 {
-        (start, (end - start as u32))
-    } else {
-        (start, total)
-    }
-}
-
 fn merge_scan_and_value((start, total): (i32, u32), value: i32) -> (i32, u32) {
     if value < start {
         (value, total + (start - value) as u32)
@@ -70,8 +51,8 @@ fn scan_in_dimensions(
         if start.0 >= dimensions.0 as i32 {
             return None;
         }
-        // Clamp to dimensisons.
-        return Some(clamp_scan(
+        // Clamp to dimensions.
+        return Some(super::clamp_scan(
             (start.1, (end.1 - start.1 + 1) as u32),
             dimensions.1,
         ));
@@ -109,10 +90,10 @@ fn scan_in_dimensions(
                 merge_scan_and_value(left, start.1)
             }
         }
-        (Some(left), Some(right)) => merge_scans(left, right),
+        (Some(left), Some(right)) => super::merge_scans(left, right),
     };
 
-    Some(clamp_scan(range, dimensions.1))
+    Some(super::clamp_scan(range, dimensions.1))
 }
 
 impl<'a, P> Operation<P> for Line<'a, P>
@@ -123,8 +104,8 @@ where
 
     fn draw_on(self, painter: &mut Painter<'_, P>) -> Self::Output {
         let dimensions = painter.dimensions();
-        if let Some((y, total)) = scan_in_dimensions(self.from, self.to, dimensions) {
-            for scanline in y..=(y + total as i32) {
+        if let Some(scan) = scan_in_dimensions(self.from, self.to, dimensions) {
+            for scanline in super::scan_as_range(scan) {
                 if let Some((x, total)) = super::scanline(self.from, self.to, scanline) {
                     painter.horizontal_line((x, scanline), total, &self.value);
                 }

@@ -1,12 +1,66 @@
+use core::ops::RangeInclusive;
+
 use crate::utility;
 
 pub mod line;
+pub mod triangle;
 
-fn as_start_and_total(a: i32, b: i32) -> (i32, u32) {
-    if a < b {
-        (a, (b - a) as u32 + 1)
+fn scan_as_range((from, total): (i32, u32)) -> RangeInclusive<i32> {
+    from..=(from + total as i32)
+}
+
+fn merge_scans(first: (i32, u32), second: (i32, u32)) -> (i32, u32) {
+    let start = first.0.min(second.0);
+    let end = (first.0 + first.1 as i32).max(second.0 + second.1 as i32);
+    (start, (end - start) as u32)
+}
+
+fn estimate_bounding_box(vertices: &[(i32, i32)]) -> Option<((i32, u32), (i32, u32))> {
+    let x = vertices.iter().map(|(x, _)| x);
+    let min_x = *x.clone().min()?;
+    let max_x = *x.max()?;
+
+    let y = vertices.iter().map(|(_, y)| y);
+    let min_y = *y.clone().min()?;
+    let max_y = *y.max()?;
+
+    Some((
+        (min_x, (max_x - min_x) as u32 + 1),
+        (min_y, (max_y - min_y) as u32 + 1),
+    ))
+}
+
+fn clamp_scan((start, total): (i32, u32), end: u32) -> (i32, u32) {
+    let (start, total) = if start < 0 {
+        (0, total - (-start) as u32)
     } else {
-        (b, (a - b) as u32 + 1)
+        (start, total)
+    };
+    if start + total as i32 >= end as i32 {
+        (start, (end - start as u32))
+    } else {
+        (start, total)
+    }
+}
+
+fn clamp_scan_to_scan((start, total): (i32, u32), (lower, max): (i32, u32)) -> (i32, u32) {
+    let (start, total) = if start < lower {
+        (lower, (start + total as i32 - lower) as u32)
+    } else {
+        (start, total)
+    };
+    if start + total as i32 >= lower + max as i32 {
+        (start, ((lower + max as i32) - start) as u32)
+    } else {
+        (start, total)
+    }
+}
+
+fn as_start_and_total(start: i32, end: i32) -> (i32, u32) {
+    if start < end {
+        (start, (end - start) as u32 + 1)
+    } else {
+        (end, (start - end) as u32 + 1)
     }
 }
 
