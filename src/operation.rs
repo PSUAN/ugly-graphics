@@ -1,5 +1,6 @@
 use crate::painter::Painter;
 
+pub mod compute;
 pub mod pixel;
 pub mod scanline;
 pub mod stamp;

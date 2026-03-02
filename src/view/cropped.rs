@@ -128,9 +128,9 @@ mod test {
 
     #[test]
     fn cropped_works() {
-        let mut sprite = Sprite::<u8, 5, 4>::from_copies(0x00);
+        let mut sprite = Sprite::<u8, 5, 4>::from_copies(0x01);
         let mut cropped = Cropped::new(&mut sprite, (4, 4));
-        cropped.modify(&|(x, y), _| (x + y) as _);
+        cropped.modify(&|v| v + 0x01);
 
         assert!(cropped.pixel((3, 3)).is_some());
         assert!(cropped.pixel((4, 4)).is_none());
@@ -142,10 +142,10 @@ mod test {
         cropped.set_horizontal_line((-1, 0), 3, 0x40);
 
         let expected = Sprite::from_raw([
-            [0x40, 0x40, 0x02, 0x03, 0x00],
-            [0x01, 0x80, 0x80, 0x80, 0x00],
-            [0x02, 0x03, 0x04, 0x05, 0x00],
-            [0x03, 0x04, 0x05, 0xff, 0x00],
+            [0x40, 0x40, 0x02, 0x02, 0x01],
+            [0x02, 0x80, 0x80, 0x80, 0x01],
+            [0x02, 0x02, 0x02, 0x02, 0x01],
+            [0x02, 0x02, 0x02, 0xff, 0x01],
         ]);
         assert_eq!(sprite, expected);
     }

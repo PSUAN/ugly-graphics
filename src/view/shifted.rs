@@ -51,11 +51,7 @@ where
 
     fn modify_pixel(&mut self, position: (i32, i32), function: Modify<P>) {
         let position = shift(self.shift, position);
-        let (shift_x, shift_y) = self.shift;
-        let (shift_x, shift_y) = (shift_x as i32, shift_y as i32);
-        self.target.modify_pixel(position, &|(x, y), value| {
-            function((x - shift_x, y - shift_y), value)
-        });
+        self.target.modify_pixel(position, function);
     }
 
     fn set_horizontal_line(&mut self, position: (i32, i32), total: u32, value: P) {
@@ -65,12 +61,8 @@ where
 
     fn modify_horizontal_line(&mut self, position: (i32, i32), total: u32, function: Modify<P>) {
         let position = shift(self.shift, position);
-        let (shift_x, shift_y) = self.shift;
-        let (shift_x, shift_y) = (shift_x as i32, shift_y as i32);
         self.target
-            .modify_horizontal_line(position, total, &|(x, y), value| {
-                function((x - shift_x, y - shift_y), value)
-            });
+            .modify_horizontal_line(position, total, function);
     }
 
     fn set(&mut self, value: P) {
@@ -93,9 +85,7 @@ where
 
         for y in shift_y..height as i32 {
             self.target
-                .modify_horizontal_line((shift_x, y), total, &move |(x, y), value| {
-                    function((x - shift_x, y - shift_y), value)
-                });
+                .modify_horizontal_line((shift_x, y), total, function);
         }
     }
 }
@@ -108,35 +98,35 @@ mod test {
 
     #[test]
     fn modify_pixel_works_properly() {
-        let mut sprite = Sprite::<u8, 4, 4>::from_copies(0x00);
+        let mut sprite = Sprite::<u8, 4, 4>::from_copies(0x01);
         let mut shifted = Shifted::new(&mut sprite, (1, 2));
-        let function = &|(x, y), _| x as u8 + y as u8;
+        let function = &|v| v + 1;
         shifted.modify_pixel((2, 0), function);
         shifted.modify_pixel((0, 1), function);
 
         let expected = Sprite::from_raw([
-            [0x00; 4],
-            [0x00; 4],
-            [0x00, 0x00, 0x00, 0x02],
-            [0x00, 0x01, 0x00, 0x00],
+            [0x01; 4],
+            [0x01; 4],
+            [0x01, 0x01, 0x01, 0x02],
+            [0x01, 0x02, 0x01, 0x01],
         ]);
         assert_eq!(sprite, expected);
     }
 
     #[test]
     fn shifted_modify_works_properly() {
-        let mut sprite = Sprite::<u8, 5, 6>::from_copies(0x00);
+        let mut sprite = Sprite::<u8, 5, 6>::from_copies(0x01);
         let mut shifted = Shifted::new(&mut sprite, (2, 3));
 
-        shifted.modify(&|(x, y), _| x as u8 + y as u8);
+        shifted.modify(&|v| v + 1);
 
         let expected = Sprite::from_raw([
-            [0x00; 5],
-            [0x00; 5],
-            [0x00; 5],
-            [0x00, 0x00, 0x00, 0x01, 0x02],
-            [0x00, 0x00, 0x01, 0x02, 0x03],
-            [0x00, 0x00, 0x02, 0x03, 0x04],
+            [0x01; 5],
+            [0x01; 5],
+            [0x01; 5],
+            [0x01, 0x01, 0x02, 0x02, 0x02],
+            [0x01, 0x01, 0x02, 0x02, 0x02],
+            [0x01, 0x01, 0x02, 0x02, 0x02],
         ]);
 
         assert_eq!(sprite, expected);

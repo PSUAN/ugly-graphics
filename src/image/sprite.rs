@@ -56,7 +56,7 @@ where
             && let Some(row) = self.data.get_mut(index_y)
             && let Some(pixel) = row.get_mut(index_x)
         {
-            *pixel = function((x, y), pixel.clone());
+            *pixel = function(pixel.clone());
         }
     }
 
@@ -92,8 +92,8 @@ where
             && let Some(row) = self.data.get_mut(index_y)
             && let Some(slice) = row.get_mut(index_x..(index_x + total).min(W as _))
         {
-            slice.iter_mut().enumerate().for_each(|(index, pixel)| {
-                *pixel = function(((index + index_x) as _, y), pixel.clone());
+            slice.iter_mut().for_each(|pixel| {
+                *pixel = function(pixel.clone());
             });
         }
     }
@@ -105,12 +105,9 @@ where
     }
 
     fn modify(&mut self, function: Modify<P>) {
-        for (y, row) in self.data.iter_mut().enumerate() {
-            let y = y as _;
-
+        for row in self.data.iter_mut() {
             row.iter_mut()
-                .enumerate()
-                .for_each(|(index, pixel)| *pixel = function((index as _, y), pixel.clone()));
+                .for_each(|pixel| *pixel = function(pixel.clone()));
         }
     }
 }
@@ -150,14 +147,14 @@ mod test {
     #[test]
     fn horizontal_line_is_being_modified_even_out_of_bounds() {
         let mut sprite = Sprite::<u8, 4, 3>::from_copies(0x00);
-        sprite.modify_horizontal_line((-3, 1), 5, &|_, _| 0xff);
+        sprite.modify_horizontal_line((-3, 1), 5, &|_| 0xff);
 
         let expected = Sprite::from_raw([[0x00; 4], [0xff, 0xff, 0x00, 0x00], [0x00; 4]]);
 
         assert_eq!(sprite, expected);
 
         let mut sprite = Sprite::<u8, 4, 3>::from_copies(0x00);
-        sprite.modify_horizontal_line((2, 1), 5, &|_, _| 0xff);
+        sprite.modify_horizontal_line((2, 1), 5, &|_| 0xff);
 
         let expected = Sprite::from_raw([[0x00; 4], [0x00, 0x00, 0xff, 0xff], [0x00; 4]]);
 
@@ -167,7 +164,7 @@ mod test {
     #[test]
     fn horizontal_line_is_being_modified_properly() {
         let mut sprite = Sprite::<u8, 6, 3>::from_copies(0x00);
-        sprite.modify_horizontal_line((1, 1), 3, &|_, _| 0x80);
+        sprite.modify_horizontal_line((1, 1), 3, &|_| 0x80);
 
         let expected =
             Sprite::from_raw([[0x00; 6], [0x00, 0x80, 0x80, 0x80, 0x00, 0x00], [0x00; 6]]);

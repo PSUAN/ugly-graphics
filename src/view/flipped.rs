@@ -1,4 +1,5 @@
 use crate::image::{Dimensions, Image, ImageMut};
+use crate::strategy::Modify;
 
 #[derive(Clone, Copy, Debug)]
 pub enum Flip {
@@ -47,37 +48,34 @@ where
     }
 }
 
-impl<T, C> Image<C> for Flipped<T>
+impl<T, P> Image<P> for Flipped<T>
 where
-    T: Image<C> + Dimensions,
+    T: Image<P>,
 {
-    fn pixel(&self, position: (i32, i32)) -> Option<C> {
+    fn pixel(&self, position: (i32, i32)) -> Option<P> {
         let position = transform(self.direction, self.target.dimensions(), position);
         self.target.pixel(position)
     }
 }
 
-impl<T, C> ImageMut<C> for Flipped<T>
+impl<T, P> ImageMut<P> for Flipped<T>
 where
-    T: ImageMut<C> + Dimensions,
+    T: ImageMut<P>,
 {
-    fn set_pixel(&mut self, position: (i32, i32), value: C) {
+    fn set_pixel(&mut self, position: (i32, i32), value: P) {
         let position = transform(self.direction, self.target.dimensions(), position);
         self.target.set_pixel(position, value);
     }
 
-    fn modify_pixel(&mut self, position: (i32, i32), function: &dyn Fn((i32, i32), C) -> C) {
+    fn modify_pixel(&mut self, position: (i32, i32), function: Modify<P>) {
         let direction = self.direction;
         let dimensions = self.target.dimensions();
         let position = transform(direction, dimensions, position);
 
-        self.target.modify_pixel(position, &move |position, pixel| {
-            let position = transform(direction, dimensions, position);
-            function(position, pixel)
-        });
+        self.target.modify_pixel(position, function);
     }
 
-    fn set_horizontal_line(&mut self, position: (i32, i32), total: u32, value: C) {
+    fn set_horizontal_line(&mut self, position: (i32, i32), total: u32, value: P) {
         let (x, y) = transform(self.direction, self.target.dimensions(), position);
         let x = match self.direction {
             Flip::Horizontal => x - total as i32 + 1,
@@ -86,12 +84,7 @@ where
         self.target.set_horizontal_line((x, y), total, value);
     }
 
-    fn modify_horizontal_line(
-        &mut self,
-        position: (i32, i32),
-        total: u32,
-        function: &dyn Fn((i32, i32), C) -> C,
-    ) {
+    fn modify_horizontal_line(&mut self, position: (i32, i32), total: u32, function: Modify<P>) {
         let direction = self.direction;
         let dimensions = self.target.dimensions();
         let (x, y) = transform(direction, dimensions, position);
@@ -100,24 +93,15 @@ where
             Flip::Vertical => x,
         };
 
-        self.target
-            .modify_horizontal_line((x, y), total, &move |position, pixel| {
-                let position = transform(direction, dimensions, position);
-                function(position, pixel)
-            });
+        self.target.modify_horizontal_line((x, y), total, function);
     }
 
-    fn set(&mut self, value: C) {
+    fn set(&mut self, value: P) {
         self.target.set(value);
     }
 
-    fn modify(&mut self, function: &dyn Fn((i32, i32), C) -> C) {
-        let direction = self.direction;
-        let dimensions = self.target.dimensions();
-        self.target.modify(&move |position, pixel| {
-            let position = transform(direction, dimensions, position);
-            function(position, pixel)
-        });
+    fn modify(&mut self, function: Modify<P>) {
+        self.target.modify(function);
     }
 }
 
@@ -170,23 +154,5 @@ mod test {
         ]);
 
         assert_eq!(sprite, expected);
-    }
-
-    #[test]
-    fn modify_works() {
-        const WIDTH: usize = 32;
-
-        let mut sprite = Sprite::<u8, WIDTH, 32>::from_copies(0x00);
-        let mut flipped = Flipped::horizontal(&mut sprite);
-
-        flipped.modify(&|(x, y), _| (x + y) as _);
-
-        let (width, height) = sprite.dimensions();
-        for x in 0..width {
-            for y in 0..height {
-                let expected = WIDTH as u8 - x as u8 + y as u8 - 1;
-                assert_eq!(sprite.pixel((x as _, y as _)), Some(expected));
-            }
-        }
     }
 }

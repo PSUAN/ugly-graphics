@@ -1,4 +1,4 @@
-pub type Modify<'a, P> = &'a dyn Fn((i32, i32), P) -> P;
+pub type Modify<'a, P> = &'a dyn Fn(P) -> P;
 
 pub enum Strategy<'a, P> {
     Overwrite(P),
@@ -21,7 +21,7 @@ pub trait IntoApply<P> {
 
 impl<F, P> IntoApply<P> for F
 where
-    F: Fn((i32, i32), P) -> P,
+    F: Fn(P) -> P,
 {
     fn apply<'a>(&'a self) -> Strategy<'a, P> {
         Strategy::Apply(self)
