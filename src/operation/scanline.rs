@@ -31,11 +31,14 @@ fn estimate_bounding_box(vertices: &[(i32, i32)]) -> Option<((i32, u32), (i32, u
 }
 
 fn clamp_scan((start, total): (i32, u32), end: u32) -> (i32, u32) {
-    let (start, total) = if start < 0 {
+    let (start, total) = if start + (total as i32) < 0 {
+        (0, 0)
+    } else if start < 0 {
         (0, total - (-start) as u32)
     } else {
         (start, total)
     };
+
     if start + total as i32 >= end as i32 {
         (start, (end - start as u32))
     } else {

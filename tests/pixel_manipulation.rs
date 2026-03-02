@@ -64,7 +64,7 @@ fn line_is_applied() {
     painter.draw(Line::new(
         (-1, -1),
         (8, 8),
-        (&|(x, y), _| x as u8 + y as u8).apply(),
+        (|(x, y), _| x as u8 + y as u8).apply(),
     ));
     painter.draw(Line::new((8, -1), (-1, 8), 0xff.overwrite()));
     painter.draw(Line::new((2, 1), (5, 1), 0x80.overwrite()));
@@ -88,7 +88,7 @@ fn triangle_is_applied() {
     const WIDTH: usize = 32;
     const HEIGHT: usize = 32;
 
-    let (a, b, c) = ((1, -10), (24, 4), (6, 31));
+    let (a, b, c) = ((0, 0), (31, 4), (6, 31));
 
     let mut filled_sprite = Sprite::<u8, WIDTH, HEIGHT>::from_copies(0x00);
     let mut painter = Painter::new(&mut filled_sprite);
@@ -110,7 +110,7 @@ fn triangle_is_applied() {
                     panic!();
                 }
             } else {
-                for x in 0..=WIDTH {
+                for x in x..=WIDTH {
                     if x == WIDTH {
                         panic!();
                     }
