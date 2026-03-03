@@ -1,4 +1,5 @@
 use crate::operation::Operation;
+use crate::operation::scanline::Scan;
 use crate::painter::Painter;
 use crate::strategy::Strategy;
 use crate::utility;
@@ -15,21 +16,17 @@ impl<'a, P> Line<'a, P> {
     }
 }
 
-fn merge_scan_and_value((start, total): (i32, u32), value: i32) -> (i32, u32) {
+fn merge_scan_and_value(Scan { start, length }: Scan, value: i32) -> Scan {
     if value < start {
-        (value, total + (start - value) as u32)
-    } else if value > start + total as i32 {
-        (start, (value - start + 1) as u32)
+        (value, length + (start - value) as u32).into()
+    } else if value > start + length as i32 {
+        (start, (value - start + 1) as u32).into()
     } else {
-        (start, total)
+        (start, length).into()
     }
 }
 
-fn scan_in_dimensions(
-    start: (i32, i32),
-    end: (i32, i32),
-    dimensions: (u32, u32),
-) -> Option<(i32, u32)> {
+fn scan_in_dimensions(start: (i32, i32), end: (i32, i32), dimensions: (u32, u32)) -> Option<Scan> {
     let (start, end) = utility::swap_if((start, end), start.1 > end.1);
 
     // Early return if the lower point is too hight.
@@ -53,7 +50,7 @@ fn scan_in_dimensions(
         }
         // Clamp to dimensions.
         return Some(super::clamp_scan(
-            (start.1, (end.1 - start.1 + 1) as u32),
+            (start.1, (end.1 - start.1 + 1) as u32).into(),
             dimensions.1,
         ));
     }
@@ -61,8 +58,8 @@ fn scan_in_dimensions(
     // Now we know that our line:
     // - is not vertical;
     // - is at least partly in vertical bounds.
-    let left = super::scanline(utility::swap(start), utility::swap(end), 0);
-    let right = super::scanline(
+    let left = super::line_scan(utility::swap(start), utility::swap(end), 0);
+    let right = super::line_scan(
         utility::swap(start),
         utility::swap(end),
         dimensions.0 as i32 - 1,
@@ -74,7 +71,7 @@ fn scan_in_dimensions(
                 return None;
             }
             // There are on intersections and the segment is inside.
-            (start.1, (end.1 - start.1 + 1) as u32)
+            (start.1, (end.1 - start.1 + 1) as u32).into()
         }
         (None, Some(right)) => {
             if start.0 < end.0 {
@@ -105,8 +102,10 @@ where
     fn draw_on(self, painter: &mut Painter<'_, P>) -> Self::Output {
         let dimensions = painter.dimensions();
         if let Some(scan) = scan_in_dimensions(self.from, self.to, dimensions) {
-            for scanline in super::scan_as_range(scan) {
-                if let Some((x, total)) = super::scanline(self.from, self.to, scanline) {
+            for scanline in scan {
+                if let Some((x, total)) =
+                    super::line_scan(self.from, self.to, scanline).map(Into::into)
+                {
                     painter.horizontal_line((x, scanline), total, &self.value);
                 }
             }
@@ -121,13 +120,34 @@ mod test {
     #[test]
     fn bounds_computation_is_proper() {
         assert_eq!(scan_in_dimensions((6, 1), (8, 3), (4, 4)), None);
-        assert_eq!(scan_in_dimensions((1, 1), (3, 3), (8, 8)), Some((1, 3)));
-        assert_eq!(scan_in_dimensions((1, 3), (3, 1), (8, 8)), Some((1, 3)));
-        assert_eq!(scan_in_dimensions((-2, 1), (3, 6), (16, 16)), Some((3, 4)));
-        assert_eq!(scan_in_dimensions((0, 0), (4, 16), (8, 8)), Some((0, 8)));
-        assert_eq!(scan_in_dimensions((0, -4), (0, 16), (8, 8)), Some((0, 8)));
-        assert_eq!(scan_in_dimensions((0, -4), (8, 16), (8, 8)), Some((0, 8)));
-        assert_eq!(scan_in_dimensions((0, 4), (4, 4), (8, 8)), Some((4, 1)));
+        assert_eq!(
+            scan_in_dimensions((1, 1), (3, 3), (8, 8)),
+            Some((1, 3).into())
+        );
+        assert_eq!(
+            scan_in_dimensions((1, 3), (3, 1), (8, 8)),
+            Some((1, 3).into())
+        );
+        assert_eq!(
+            scan_in_dimensions((-2, 1), (3, 6), (16, 16)),
+            Some((3, 4).into())
+        );
+        assert_eq!(
+            scan_in_dimensions((0, 0), (4, 16), (8, 8)),
+            Some((0, 8).into())
+        );
+        assert_eq!(
+            scan_in_dimensions((0, -4), (0, 16), (8, 8)),
+            Some((0, 8).into())
+        );
+        assert_eq!(
+            scan_in_dimensions((0, -4), (8, 16), (8, 8)),
+            Some((0, 8).into())
+        );
+        assert_eq!(
+            scan_in_dimensions((0, 4), (4, 4), (8, 8)),
+            Some((4, 1).into())
+        );
         assert_eq!(scan_in_dimensions((0, 4), (4, 4), (2, 2)), None);
         assert_eq!(scan_in_dimensions((0, 8), (4, 8), (4, 4)), None);
         assert_eq!(scan_in_dimensions((0, 8), (4, 16), (4, 4)), None);
