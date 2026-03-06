@@ -1,4 +1,3 @@
-use crate::operation::scanline::{as_start_and_total, line_scan};
 use crate::operation::{Operation, scanline};
 use crate::painter::Painter;
 use crate::strategy::Strategy;
@@ -37,7 +36,7 @@ where
         if vertex_a.1 == vertex_c.1 {
             let start = vertex_a.0.min(vertex_b.0).min(vertex_c.0);
             let end = vertex_a.0.max(vertex_b.0).max(vertex_c.0);
-            let (start, total) = as_start_and_total(start, end);
+            let (start, total) = scanline::as_start_and_total(start, end);
             painter.horizontal_line((start, vertex_a.1), total, &self.value);
             return;
         }
@@ -47,7 +46,7 @@ where
         let scan = scanline::clamp_scan_to_scan((start, total).into(), bounding_y);
         for y in scan {
             if let Some(first) = scanline::line_scan(vertex_a, vertex_b, y)
-                && let Some(second) = line_scan(vertex_a, vertex_c, y)
+                && let Some(second) = scanline::line_scan(vertex_a, vertex_c, y)
             {
                 let scan = scanline::merge_scans(first, second);
                 painter.horizontal_line((scan.start, y), scan.length, &self.value);
@@ -59,7 +58,7 @@ where
         let scan = scanline::clamp_scan_to_scan((start, total).into(), bounding_y);
         for y in scan {
             if let Some(first) = scanline::line_scan(vertex_b, vertex_c, y)
-                && let Some(second) = line_scan(vertex_a, vertex_c, y)
+                && let Some(second) = scanline::line_scan(vertex_a, vertex_c, y)
             {
                 let scan = scanline::merge_scans(first, second);
                 painter.horizontal_line((scan.start, y), scan.length, &self.value);
