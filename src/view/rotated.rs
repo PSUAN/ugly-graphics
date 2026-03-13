@@ -11,10 +11,14 @@ pub struct Rotated<T> {
     target: T,
 }
 
-fn transform(rotation: Rotation, (width, height): (u32, u32), (x, y): (i32, i32)) -> (i32, i32) {
+fn transform(
+    rotation: Rotation,
+    (width, height): (u32, u32),
+    (x, y): (u32, u32),
+) -> Option<(u32, u32)> {
     match rotation {
-        Rotation::Clockwise => (y, height as i32 - 1 - x),
-        Rotation::CounterClockwise => (width as i32 - 1 - y, x),
+        Rotation::Clockwise => Some((y, height.checked_sub(x + 1)?)),
+        Rotation::CounterClockwise => Some((width.checked_sub(y + 1)?, x)),
     }
 }
 
@@ -52,8 +56,8 @@ impl<T, C> Image<C> for Rotated<T>
 where
     T: Image<C> + Dimensions,
 {
-    fn pixel(&self, position: (i32, i32)) -> Option<C> {
-        let position = transform(self.rotation, self.target.dimensions(), position);
+    fn pixel(&self, position: (u32, u32)) -> Option<C> {
+        let position = transform(self.rotation, self.target.dimensions(), position)?;
         self.target.pixel(position)
     }
 }
@@ -72,7 +76,6 @@ mod test {
         ]);
         let rotated = Rotated::clockwise(&sprite);
 
-        assert_eq!(rotated.pixel((-1, 2)), None);
         assert_eq!(rotated.pixel((0, 0)), Some(0x10));
         assert_eq!(rotated.pixel((1, 1)), Some(0x01));
         assert_eq!(rotated.pixel((2, 2)), None);
@@ -86,7 +89,6 @@ mod test {
         ]);
         let rotated = Rotated::clockwise(&mut sprite);
 
-        assert_eq!(rotated.pixel((-1, 2)), None);
         assert_eq!(rotated.pixel((0, 0)), Some(0x10));
         assert_eq!(rotated.pixel((1, 1)), Some(0x01));
         assert_eq!(rotated.pixel((2, 2)), None);

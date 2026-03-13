@@ -35,7 +35,7 @@ where
     A: Image<PA>,
     B: Image<PB>,
 {
-    fn pixel(&self, position: (i32, i32)) -> Option<(PA, PB)> {
+    fn pixel(&self, position: (u32, u32)) -> Option<(PA, PB)> {
         self.first.pixel(position).zip(self.second.pixel(position))
     }
 }

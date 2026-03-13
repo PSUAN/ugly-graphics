@@ -2,6 +2,9 @@ use crate::strategy::Modify;
 
 pub mod sprite;
 
+#[cfg(feature = "image-adapter")]
+pub mod image_adapter;
+
 pub trait Dimensions {
     fn dimensions(&self) -> (u32, u32);
 }
@@ -25,14 +28,14 @@ where
 }
 
 pub trait Image<P>: Dimensions {
-    fn pixel(&self, position: (i32, i32)) -> Option<P>;
+    fn pixel(&self, position: (u32, u32)) -> Option<P>;
 }
 
 impl<T, P> Image<P> for &T
 where
     T: Image<P>,
 {
-    fn pixel(&self, position: (i32, i32)) -> Option<P> {
+    fn pixel(&self, position: (u32, u32)) -> Option<P> {
         Image::pixel(*self, position)
     }
 }
@@ -41,17 +44,17 @@ impl<T, P> Image<P> for &mut T
 where
     T: Image<P>,
 {
-    fn pixel(&self, position: (i32, i32)) -> Option<P> {
+    fn pixel(&self, position: (u32, u32)) -> Option<P> {
         Image::pixel(*self, position)
     }
 }
 
 pub trait ImageMut<P>: Dimensions {
-    fn set_pixel(&mut self, position: (i32, i32), value: P);
-    fn modify_pixel(&mut self, position: (i32, i32), function: Modify<P>);
+    fn set_pixel(&mut self, position: (u32, u32), value: P);
+    fn modify_pixel(&mut self, position: (u32, u32), function: Modify<P>);
 
-    fn set_horizontal_line(&mut self, position: (i32, i32), total: u32, value: P);
-    fn modify_horizontal_line(&mut self, position: (i32, i32), total: u32, function: Modify<P>);
+    fn set_horizontal_line(&mut self, position: (u32, u32), total: u32, value: P);
+    fn modify_horizontal_line(&mut self, position: (u32, u32), total: u32, function: Modify<P>);
 
     fn set(&mut self, value: P);
     fn modify(&mut self, function: Modify<P>);
@@ -61,19 +64,19 @@ impl<T, P> ImageMut<P> for &mut T
 where
     T: ImageMut<P>,
 {
-    fn set_pixel(&mut self, position: (i32, i32), value: P) {
+    fn set_pixel(&mut self, position: (u32, u32), value: P) {
         ImageMut::set_pixel(*self, position, value);
     }
 
-    fn modify_pixel(&mut self, position: (i32, i32), function: Modify<P>) {
+    fn modify_pixel(&mut self, position: (u32, u32), function: Modify<P>) {
         ImageMut::modify_pixel(*self, position, function);
     }
 
-    fn set_horizontal_line(&mut self, position: (i32, i32), plus: u32, value: P) {
+    fn set_horizontal_line(&mut self, position: (u32, u32), plus: u32, value: P) {
         ImageMut::set_horizontal_line(*self, position, plus, value);
     }
 
-    fn modify_horizontal_line(&mut self, position: (i32, i32), plus: u32, function: Modify<P>) {
+    fn modify_horizontal_line(&mut self, position: (u32, u32), plus: u32, function: Modify<P>) {
         ImageMut::modify_horizontal_line(*self, position, plus, function);
     }
 

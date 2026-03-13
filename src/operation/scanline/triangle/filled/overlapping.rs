@@ -24,7 +24,7 @@ where
         let (_, height) = painter.dimensions();
 
         let (_, bounding_y) = scanline::estimate_bounding_box(&self.vertices).unwrap_or_default();
-        let bounding_y = scanline::clamp_scan(bounding_y, height);
+        let bounding_y = scanline::clamp_range(bounding_y, 0, height as i32);
 
         // Sort vertices by the y value.
         let [vertex_a, vertex_b, vertex_c] = self.vertices;
@@ -36,32 +36,38 @@ where
         if vertex_a.1 == vertex_c.1 {
             let start = vertex_a.0.min(vertex_b.0).min(vertex_c.0);
             let end = vertex_a.0.max(vertex_b.0).max(vertex_c.0);
-            let (start, total) = scanline::as_start_and_total(start, end);
-            painter.horizontal_line((start, vertex_a.1), total, &self.value);
+            let range = start..end;
+            painter.horizontal_line(range, vertex_a.1, &self.value);
             return;
         }
 
         // Iterate from the top point to the middle point.
-        let (start, total) = scanline::as_start_and_total(vertex_a.1, vertex_b.1);
-        let scan = scanline::clamp_scan_to_scan((start, total).into(), bounding_y);
+        let scan = scanline::clamp_range(
+            vertex_a.1..(vertex_b.1 + 1),
+            bounding_y.start,
+            bounding_y.end,
+        );
         for y in scan {
             if let Some(first) = scanline::line_scan(vertex_a, vertex_b, y)
                 && let Some(second) = scanline::line_scan(vertex_a, vertex_c, y)
             {
-                let scan = scanline::merge_scans(first, second);
-                painter.horizontal_line((scan.start, y), scan.length, &self.value);
+                let scan = scanline::merge_ranges(first, second);
+                painter.horizontal_line(scan, y, &self.value);
             }
         }
 
         // Iterate from the middle point to the end.
-        let (start, total) = scanline::as_start_and_total(vertex_b.1 + 1, vertex_c.1);
-        let scan = scanline::clamp_scan_to_scan((start, total).into(), bounding_y);
+        let scan = scanline::clamp_range(
+            (vertex_b.1 + 1)..(vertex_c.1 + 1),
+            bounding_y.start,
+            bounding_y.end + 1,
+        );
         for y in scan {
             if let Some(first) = scanline::line_scan(vertex_b, vertex_c, y)
                 && let Some(second) = scanline::line_scan(vertex_a, vertex_c, y)
             {
-                let scan = scanline::merge_scans(first, second);
-                painter.horizontal_line((scan.start, y), scan.length, &self.value);
+                let scan = scanline::merge_ranges(first, second);
+                painter.horizontal_line(scan, y, &self.value);
             }
         }
     }

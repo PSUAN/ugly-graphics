@@ -1,5 +1,6 @@
+use core::ops::Range;
+
 use crate::operation::Operation;
-use crate::operation::scanline::Scan;
 use crate::painter::Painter;
 use crate::strategy::Strategy;
 use crate::utility;
@@ -16,24 +17,28 @@ impl<'a, P> Line<'a, P> {
     }
 }
 
-fn merge_scan_and_value(Scan { start, length }: Scan, value: i32) -> Scan {
-    if value < start {
-        (value, length + (start - value) as u32).into()
-    } else if value > start + length as i32 {
-        (start, (value - start + 1) as u32).into()
+fn extend_range_to(range: Range<i32>, value: i32) -> Range<i32> {
+    if value < range.start {
+        value..range.end
+    } else if value > range.end {
+        range.start..value
     } else {
-        (start, length).into()
+        range
     }
 }
 
-fn scan_in_dimensions(start: (i32, i32), end: (i32, i32), dimensions: (u32, u32)) -> Option<Scan> {
+fn vertical_range_in_dimensions(
+    start: (i32, i32),
+    end: (i32, i32),
+    dimensions: (u32, u32),
+) -> Option<Range<i32>> {
     let (start, end) = utility::swap_if((start, end), start.1 > end.1);
 
     // Early return if the lower point is too hight.
     if end.1 < 0 {
         return None;
     }
-    // Early return if the lower point is too low.
+    // Early return if the higher point is too low.
     if start.1 >= dimensions.1 as i32 {
         return None;
     }
@@ -49,9 +54,10 @@ fn scan_in_dimensions(start: (i32, i32), end: (i32, i32), dimensions: (u32, u32)
             return None;
         }
         // Clamp to dimensions.
-        return Some(super::clamp_scan(
-            (start.1, (end.1 - start.1 + 1) as u32).into(),
-            dimensions.1,
+        return Some(super::clamp_range(
+            start.1..end.1 + 1,
+            0,
+            dimensions.1 as i32,
         ));
     }
 
@@ -70,27 +76,27 @@ fn scan_in_dimensions(start: (i32, i32), end: (i32, i32), dimensions: (u32, u32)
             if start.0.min(end.0) < 0 || start.0.max(end.0) >= dimensions.0 as i32 {
                 return None;
             }
-            // There are on intersections and the segment is inside.
-            (start.1, (end.1 - start.1 + 1) as u32).into()
+            // There are no intersections and the segment is inside.
+            start.1..end.1 + 1
         }
         (None, Some(right)) => {
             if start.0 < end.0 {
-                merge_scan_and_value(right, start.1)
+                extend_range_to(right, start.1)
             } else {
-                merge_scan_and_value(right, end.1)
+                extend_range_to(right, end.1)
             }
         }
         (Some(left), None) => {
             if start.0 < end.0 {
-                merge_scan_and_value(left, end.1)
+                extend_range_to(left, end.1)
             } else {
-                merge_scan_and_value(left, start.1)
+                extend_range_to(left, start.1)
             }
         }
-        (Some(left), Some(right)) => super::merge_scans(left, right),
+        (Some(left), Some(right)) => super::merge_ranges(left, right),
     };
 
-    Some(super::clamp_scan(range, dimensions.1))
+    Some(super::clamp_range(range, 0, dimensions.1 as i32))
 }
 
 impl<'a, P> Operation<P> for Line<'a, P>
@@ -101,12 +107,10 @@ where
 
     fn draw_on(self, painter: &mut Painter<'_, P>) -> Self::Output {
         let dimensions = painter.dimensions();
-        if let Some(scan) = scan_in_dimensions(self.from, self.to, dimensions) {
+        if let Some(scan) = vertical_range_in_dimensions(self.from, self.to, dimensions) {
             for scanline in scan {
-                if let Some((x, total)) =
-                    super::line_scan(self.from, self.to, scanline).map(Into::into)
-                {
-                    painter.horizontal_line((x, scanline), total, &self.value);
+                if let Some(range) = super::line_scan(self.from, self.to, scanline) {
+                    painter.horizontal_line(range, scanline, &self.value);
                 }
             }
         }
@@ -119,37 +123,37 @@ mod test {
 
     #[test]
     fn bounds_computation_is_proper() {
-        assert_eq!(scan_in_dimensions((6, 1), (8, 3), (4, 4)), None);
+        assert_eq!(vertical_range_in_dimensions((6, 1), (8, 3), (4, 4)), None);
         assert_eq!(
-            scan_in_dimensions((1, 1), (3, 3), (8, 8)),
-            Some((1, 3).into())
+            vertical_range_in_dimensions((1, 1), (3, 3), (8, 8)),
+            Some(1..4)
         );
         assert_eq!(
-            scan_in_dimensions((1, 3), (3, 1), (8, 8)),
-            Some((1, 3).into())
+            vertical_range_in_dimensions((1, 3), (3, 1), (8, 8)),
+            Some(1..4)
         );
         assert_eq!(
-            scan_in_dimensions((-2, 1), (3, 6), (16, 16)),
-            Some((3, 4).into())
+            vertical_range_in_dimensions((-2, 1), (3, 6), (16, 16)),
+            Some(3..6)
         );
         assert_eq!(
-            scan_in_dimensions((0, 0), (4, 16), (8, 8)),
-            Some((0, 8).into())
+            vertical_range_in_dimensions((0, 0), (4, 16), (8, 8)),
+            Some(0..8)
         );
         assert_eq!(
-            scan_in_dimensions((0, -4), (0, 16), (8, 8)),
-            Some((0, 8).into())
+            vertical_range_in_dimensions((0, -4), (0, 16), (8, 8)),
+            Some(0..8)
         );
         assert_eq!(
-            scan_in_dimensions((0, -4), (8, 16), (8, 8)),
-            Some((0, 8).into())
+            vertical_range_in_dimensions((0, -4), (8, 16), (8, 8)),
+            Some(0..8)
         );
         assert_eq!(
-            scan_in_dimensions((0, 4), (4, 4), (8, 8)),
-            Some((4, 1).into())
+            vertical_range_in_dimensions((0, 4), (4, 4), (8, 8)),
+            Some(4..5)
         );
-        assert_eq!(scan_in_dimensions((0, 4), (4, 4), (2, 2)), None);
-        assert_eq!(scan_in_dimensions((0, 8), (4, 8), (4, 4)), None);
-        assert_eq!(scan_in_dimensions((0, 8), (4, 16), (4, 4)), None);
+        assert_eq!(vertical_range_in_dimensions((0, 4), (4, 4), (2, 2)), None);
+        assert_eq!(vertical_range_in_dimensions((0, 8), (4, 8), (4, 4)), None);
+        assert_eq!(vertical_range_in_dimensions((0, 8), (4, 16), (4, 4)), None);
     }
 }

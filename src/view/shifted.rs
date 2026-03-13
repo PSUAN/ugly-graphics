@@ -25,15 +25,15 @@ where
     }
 }
 
-fn shift((shift_x, shift_y): (u32, u32), (x, y): (i32, i32)) -> (i32, i32) {
-    (shift_x as i32 + x, shift_y as i32 + y)
+fn shift((shift_x, shift_y): (u32, u32), (x, y): (u32, u32)) -> (u32, u32) {
+    (shift_x + x, shift_y + y)
 }
 
 impl<T, P> Image<P> for Shifted<T>
 where
     T: Image<P>,
 {
-    fn pixel(&self, position: (i32, i32)) -> Option<P> {
+    fn pixel(&self, position: (u32, u32)) -> Option<P> {
         let position = shift(self.shift, position);
         self.target.pixel(position)
     }
@@ -44,22 +44,22 @@ where
     T: ImageMut<P>,
     P: Clone,
 {
-    fn set_pixel(&mut self, position: (i32, i32), value: P) {
+    fn set_pixel(&mut self, position: (u32, u32), value: P) {
         let position = shift(self.shift, position);
         self.target.set_pixel(position, value);
     }
 
-    fn modify_pixel(&mut self, position: (i32, i32), function: Modify<P>) {
+    fn modify_pixel(&mut self, position: (u32, u32), function: Modify<P>) {
         let position = shift(self.shift, position);
         self.target.modify_pixel(position, function);
     }
 
-    fn set_horizontal_line(&mut self, position: (i32, i32), total: u32, value: P) {
+    fn set_horizontal_line(&mut self, position: (u32, u32), total: u32, value: P) {
         let position = shift(self.shift, position);
         self.target.set_horizontal_line(position, total, value);
     }
 
-    fn modify_horizontal_line(&mut self, position: (i32, i32), total: u32, function: Modify<P>) {
+    fn modify_horizontal_line(&mut self, position: (u32, u32), total: u32, function: Modify<P>) {
         let position = shift(self.shift, position);
         self.target
             .modify_horizontal_line(position, total, function);
@@ -69,9 +69,8 @@ where
         let (width, height) = self.target.dimensions();
         let (shift_x, shift_y) = self.shift;
         let total = width - shift_x;
-        let (shift_x, shift_y) = (shift_x as i32, shift_y as i32);
 
-        for y in shift_y..height as i32 {
+        for y in shift_y..height {
             self.target
                 .set_horizontal_line((shift_x, y), total, value.clone());
         }
@@ -81,9 +80,8 @@ where
         let (width, height) = self.target.dimensions();
         let (shift_x, shift_y) = self.shift;
         let total = width - shift_x;
-        let (shift_x, shift_y) = (shift_x as i32, shift_y as i32);
 
-        for y in shift_y..height as i32 {
+        for y in shift_y..height {
             self.target
                 .modify_horizontal_line((shift_x, y), total, function);
         }

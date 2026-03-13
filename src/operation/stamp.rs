@@ -32,11 +32,11 @@ where
         let (x, y) = self.position;
         let (width, height) = self.stamp.dimensions();
 
-        for stamp_y in 0..height as i32 {
-            let target_y = y + stamp_y;
-            for stamp_x in 0..width as i32 {
+        for stamp_y in 0..height {
+            let target_y = y + stamp_y as i32;
+            for stamp_x in 0..width {
                 if let Some(stamp_pixel) = self.stamp.pixel((stamp_x, stamp_y)) {
-                    let target_x = x + stamp_x;
+                    let target_x = x + stamp_x as i32;
 
                     let strategy =
                         move |passed_pixel| (self.action)(passed_pixel, stamp_pixel.clone());

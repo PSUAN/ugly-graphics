@@ -10,3 +10,14 @@ readme = "README.md"
 
 [features]
 default = []
+image-adapter = ["dep:image"]
+
+[dependencies]
+image = { version = "0.25.10", optional = true, default-features = false }
+
+[dev-dependencies]
+image = { version = "0.25.10", features = ["png"], default-features = false }
+
+[[example]]
+name = "image-adapter"
+required-features = [ "image-adapter" ]
