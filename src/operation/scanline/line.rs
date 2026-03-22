@@ -32,7 +32,7 @@ fn vertical_range_in_dimensions(
     end: (i32, i32),
     dimensions: (u32, u32),
 ) -> Option<Range<i32>> {
-    let (start, end) = utility::swap_if((start, end), start.1 > end.1);
+    let (start, end) = utility::swap_if(start.1 > end.1, (start, end));
 
     // Early return if the lower point is too hight.
     if end.1 < 0 {

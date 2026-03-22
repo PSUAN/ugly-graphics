@@ -31,7 +31,7 @@ pub fn clamp_range(range: Range<i32>, start: i32, end: i32) -> Range<i32> {
 
 pub fn line_scan(start: (i32, i32), end: (i32, i32), scan: i32) -> Option<Range<i32>> {
     // Sort to make the line go from "top" to "bottom".
-    let (start, end) = utility::swap_if((start, end), start.1 > end.1);
+    let (start, end) = utility::swap_if(start.1 > end.1, (start, end));
 
     // Early return if scan is outside of line bounds.
     if scan < start.1 || scan > end.1 {
@@ -42,7 +42,7 @@ pub fn line_scan(start: (i32, i32), end: (i32, i32), scan: i32) -> Option<Range<
 
     // Early return if line is horizontal.
     if delta_y == 0 {
-        let (start, end) = utility::swap_if((start, end), start.0 > end.0);
+        let (start, end) = utility::swap_if(start.0 > end.0, (start, end));
         return Some(start.0..end.0 + 1);
     }
 
@@ -57,7 +57,7 @@ pub fn line_scan(start: (i32, i32), end: (i32, i32), scan: i32) -> Option<Range<
         let first = start.0 + (scan - start.1) * x_points / y_points;
         let second = start.0 + (scan - start.1 + 1) * x_points / y_points - delta_x.signum();
 
-        let (first, second) = swap_if((first, second), first > second);
+        let (first, second) = swap_if(first > second, (first, second));
 
         Some(first..second + 1)
     }
