@@ -5,11 +5,11 @@ use crate::operation::Operation;
 use crate::strategy::Strategy;
 
 pub struct Painter<'a, P> {
-    target: &'a mut dyn ImageMut<P>,
+    target: &'a mut dyn ImageMut<Pixel = P>,
 }
 
 impl<'a, P> Painter<'a, P> {
-    pub fn new(target: &'a mut dyn ImageMut<P>) -> Self {
+    pub fn new(target: &'a mut dyn ImageMut<Pixel = P>) -> Self {
         Self { target }
     }
 }

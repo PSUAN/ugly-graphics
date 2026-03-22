@@ -69,33 +69,37 @@ where
     }
 }
 
-impl<T, P> Image<P> for Flipped<T>
+impl<T> Image for Flipped<T>
 where
-    T: Image<P>,
+    T: Image,
 {
-    fn pixel(&self, position: (u32, u32)) -> Option<P> {
+    type Pixel = T::Pixel;
+
+    fn pixel(&self, position: (u32, u32)) -> Option<Self::Pixel> {
         let position = transform(self.direction, self.target.dimensions(), position)?;
         self.target.pixel(position)
     }
 }
 
-impl<T, P> ImageMut<P> for Flipped<T>
+impl<T> ImageMut for Flipped<T>
 where
-    T: ImageMut<P>,
+    T: ImageMut,
 {
-    fn set_pixel(&mut self, position: (u32, u32), value: P) {
+    type Pixel = T::Pixel;
+
+    fn set_pixel(&mut self, position: (u32, u32), value: Self::Pixel) {
         if let Some(position) = transform(self.direction, self.target.dimensions(), position) {
             self.target.set_pixel(position, value);
         }
     }
 
-    fn modify_pixel(&mut self, position: (u32, u32), function: Modify<P>) {
+    fn modify_pixel(&mut self, position: (u32, u32), function: Modify<Self::Pixel>) {
         if let Some(position) = transform(self.direction, self.target.dimensions(), position) {
             self.target.modify_pixel(position, function);
         }
     }
 
-    fn set_horizontal_line(&mut self, position: (u32, u32), total: u32, value: P) {
+    fn set_horizontal_line(&mut self, position: (u32, u32), total: u32, value: Self::Pixel) {
         if let Some(((x, y), total)) =
             transform_scan(self.direction, self.target.dimensions(), position, total)
         {
@@ -103,7 +107,12 @@ where
         }
     }
 
-    fn modify_horizontal_line(&mut self, position: (u32, u32), total: u32, function: Modify<P>) {
+    fn modify_horizontal_line(
+        &mut self,
+        position: (u32, u32),
+        total: u32,
+        function: Modify<Self::Pixel>,
+    ) {
         if let Some(((x, y), total)) =
             transform_scan(self.direction, self.target.dimensions(), position, total)
         {
@@ -111,11 +120,11 @@ where
         }
     }
 
-    fn set(&mut self, value: P) {
+    fn set(&mut self, value: Self::Pixel) {
         self.target.set(value);
     }
 
-    fn modify(&mut self, function: Modify<P>) {
+    fn modify(&mut self, function: Modify<Self::Pixel>) {
         self.target.modify(function);
     }
 }

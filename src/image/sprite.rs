@@ -26,20 +26,24 @@ impl<P, const W: usize, const H: usize> Dimensions for Sprite<P, W, H> {
     }
 }
 
-impl<P, const W: usize, const H: usize> Image<P> for Sprite<P, W, H>
+impl<P, const W: usize, const H: usize> Image for Sprite<P, W, H>
 where
     P: Clone,
 {
+    type Pixel = P;
+
     fn pixel(&self, (x, y): (u32, u32)) -> Option<P> {
         let (x, y) = (usize::try_from(x).ok()?, usize::try_from(y).ok()?);
         self.data.get(y)?.get(x).cloned()
     }
 }
 
-impl<P, const W: usize, const H: usize> ImageMut<P> for Sprite<P, W, H>
+impl<P, const W: usize, const H: usize> ImageMut for Sprite<P, W, H>
 where
     P: Clone,
 {
+    type Pixel = P;
+
     fn set_pixel(&mut self, (x, y): (u32, u32), value: P) {
         let indices = (usize::try_from(x), usize::try_from(y));
         if let (Ok(x), Ok(y)) = indices

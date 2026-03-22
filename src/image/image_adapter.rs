@@ -36,44 +36,50 @@ where
     }
 }
 
-impl<P, C> Image<P> for Adapter<&ImageBuffer<P, C>>
+impl<P, C> Image for Adapter<&ImageBuffer<P, C>>
 where
     P: image::Pixel,
     C: Deref<Target = [P::Subpixel]>,
 {
-    fn pixel(&self, (x, y): (u32, u32)) -> Option<P> {
+    type Pixel = P;
+
+    fn pixel(&self, (x, y): (u32, u32)) -> Option<Self::Pixel> {
         self.buffer.get_pixel_checked(x, y).cloned()
     }
 }
 
-impl<P, C> Image<P> for Adapter<&mut ImageBuffer<P, C>>
+impl<P, C> Image for Adapter<&mut ImageBuffer<P, C>>
 where
     P: image::Pixel,
     C: Deref<Target = [P::Subpixel]>,
 {
-    fn pixel(&self, (x, y): (u32, u32)) -> Option<P> {
+    type Pixel = P;
+
+    fn pixel(&self, (x, y): (u32, u32)) -> Option<Self::Pixel> {
         self.buffer.get_pixel_checked(x, y).cloned()
     }
 }
 
-impl<P, C> ImageMut<P> for Adapter<&mut ImageBuffer<P, C>>
+impl<P, C> ImageMut for Adapter<&mut ImageBuffer<P, C>>
 where
     P: image::Pixel,
     C: DerefMut<Target = [P::Subpixel]>,
 {
-    fn set_pixel(&mut self, (x, y): (u32, u32), value: P) {
+    type Pixel = P;
+
+    fn set_pixel(&mut self, (x, y): (u32, u32), value: Self::Pixel) {
         if let Some(pixel) = self.buffer.get_pixel_mut_checked(x, y) {
             *pixel = value;
         }
     }
 
-    fn modify_pixel(&mut self, (x, y): (u32, u32), function: Modify<P>) {
+    fn modify_pixel(&mut self, (x, y): (u32, u32), function: Modify<Self::Pixel>) {
         if let Some(pixel) = self.buffer.get_pixel_mut_checked(x, y) {
             *pixel = function(*pixel);
         }
     }
 
-    fn set_horizontal_line(&mut self, (x, y): (u32, u32), total: u32, value: P) {
+    fn set_horizontal_line(&mut self, (x, y): (u32, u32), total: u32, value: Self::Pixel) {
         let (width, heignt) = self.dimensions();
         if y >= heignt {
             return;
@@ -83,7 +89,12 @@ where
         }
     }
 
-    fn modify_horizontal_line(&mut self, (x, y): (u32, u32), total: u32, function: Modify<P>) {
+    fn modify_horizontal_line(
+        &mut self,
+        (x, y): (u32, u32),
+        total: u32,
+        function: Modify<Self::Pixel>,
+    ) {
         let (width, heignt) = self.dimensions();
         if y >= heignt {
             return;
@@ -93,11 +104,11 @@ where
         }
     }
 
-    fn set(&mut self, value: P) {
+    fn set(&mut self, value: Self::Pixel) {
         self.buffer.pixels_mut().for_each(|p| *p = value);
     }
 
-    fn modify(&mut self, function: Modify<P>) {
+    fn modify(&mut self, function: Modify<Self::Pixel>) {
         self.buffer.pixels_mut().for_each(|p| *p = function(*p));
     }
 }

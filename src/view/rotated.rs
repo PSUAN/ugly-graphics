@@ -52,11 +52,13 @@ where
     }
 }
 
-impl<T, C> Image<C> for Rotated<T>
+impl<T> Image for Rotated<T>
 where
-    T: Image<C> + Dimensions,
+    T: Image,
 {
-    fn pixel(&self, position: (u32, u32)) -> Option<C> {
+    type Pixel = T::Pixel;
+
+    fn pixel(&self, position: (u32, u32)) -> Option<Self::Pixel> {
         let position = transform(self.rotation, self.target.dimensions(), position)?;
         self.target.pixel(position)
     }

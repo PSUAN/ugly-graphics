@@ -38,34 +38,38 @@ where
     }
 }
 
-impl<T, P> Image<P> for Cropped<T>
+impl<T> Image for Cropped<T>
 where
-    T: Image<P>,
+    T: Image,
 {
-    fn pixel(&self, position: (u32, u32)) -> Option<P> {
+    type Pixel = T::Pixel;
+
+    fn pixel(&self, position: (u32, u32)) -> Option<Self::Pixel> {
         let position = crop_position(self.dimensions, position)?;
         self.target.pixel(position)
     }
 }
 
-impl<T, P> ImageMut<P> for Cropped<T>
+impl<T> ImageMut for Cropped<T>
 where
-    T: ImageMut<P>,
-    P: Clone,
+    T: ImageMut,
+    T::Pixel: Clone,
 {
-    fn set_pixel(&mut self, position: (u32, u32), value: P) {
+    type Pixel = T::Pixel;
+
+    fn set_pixel(&mut self, position: (u32, u32), value: Self::Pixel) {
         if let Some(position) = crop_position(self.dimensions, position) {
             self.target.set_pixel(position, value);
         }
     }
 
-    fn modify_pixel(&mut self, position: (u32, u32), function: Modify<P>) {
+    fn modify_pixel(&mut self, position: (u32, u32), function: Modify<Self::Pixel>) {
         if let Some(position) = crop_position(self.dimensions, position) {
             self.target.modify_pixel(position, function);
         }
     }
 
-    fn set_horizontal_line(&mut self, position: (u32, u32), plus: u32, value: P) {
+    fn set_horizontal_line(&mut self, position: (u32, u32), plus: u32, value: Self::Pixel) {
         let cropped_width = self.dimensions.0;
 
         if let Some((x, y)) = crop_position(self.dimensions, position) {
@@ -78,7 +82,12 @@ where
         }
     }
 
-    fn modify_horizontal_line(&mut self, position: (u32, u32), plus: u32, function: Modify<P>) {
+    fn modify_horizontal_line(
+        &mut self,
+        position: (u32, u32),
+        plus: u32,
+        function: Modify<Self::Pixel>,
+    ) {
         let cropped_width = self.dimensions.0;
 
         if let Some((x, y)) = crop_position(self.dimensions, position) {
@@ -91,7 +100,7 @@ where
         }
     }
 
-    fn set(&mut self, value: P) {
+    fn set(&mut self, value: Self::Pixel) {
         let (cropped_width, cropped_height) = self.dimensions;
 
         for y in 0..cropped_height {
@@ -100,7 +109,7 @@ where
         }
     }
 
-    fn modify(&mut self, function: Modify<P>) {
+    fn modify(&mut self, function: Modify<Self::Pixel>) {
         let (cropped_width, cropped_height) = self.dimensions;
 
         for y in 0..cropped_height {

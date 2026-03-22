@@ -27,64 +27,84 @@ where
     }
 }
 
-pub trait Image<P>: Dimensions {
-    fn pixel(&self, position: (u32, u32)) -> Option<P>;
+pub trait Image: Dimensions {
+    type Pixel;
+
+    fn pixel(&self, position: (u32, u32)) -> Option<Self::Pixel>;
 }
 
-impl<T, P> Image<P> for &T
+impl<T> Image for &T
 where
-    T: Image<P>,
+    T: Image,
 {
-    fn pixel(&self, position: (u32, u32)) -> Option<P> {
+    type Pixel = T::Pixel;
+
+    fn pixel(&self, position: (u32, u32)) -> Option<Self::Pixel> {
         Image::pixel(*self, position)
     }
 }
 
-impl<T, P> Image<P> for &mut T
+impl<T> Image for &mut T
 where
-    T: Image<P>,
+    T: Image,
 {
-    fn pixel(&self, position: (u32, u32)) -> Option<P> {
+    type Pixel = T::Pixel;
+
+    fn pixel(&self, position: (u32, u32)) -> Option<Self::Pixel> {
         Image::pixel(*self, position)
     }
 }
 
-pub trait ImageMut<P>: Dimensions {
-    fn set_pixel(&mut self, position: (u32, u32), value: P);
-    fn modify_pixel(&mut self, position: (u32, u32), function: Modify<P>);
+pub trait ImageMut: Dimensions {
+    type Pixel;
 
-    fn set_horizontal_line(&mut self, position: (u32, u32), total: u32, value: P);
-    fn modify_horizontal_line(&mut self, position: (u32, u32), total: u32, function: Modify<P>);
+    fn set_pixel(&mut self, position: (u32, u32), value: Self::Pixel);
+    fn modify_pixel(&mut self, position: (u32, u32), function: Modify<Self::Pixel>);
 
-    fn set(&mut self, value: P);
-    fn modify(&mut self, function: Modify<P>);
+    fn set_horizontal_line(&mut self, position: (u32, u32), total: u32, value: Self::Pixel);
+    fn modify_horizontal_line(
+        &mut self,
+        position: (u32, u32),
+        total: u32,
+        function: Modify<Self::Pixel>,
+    );
+
+    fn set(&mut self, value: Self::Pixel);
+    fn modify(&mut self, function: Modify<Self::Pixel>);
 }
 
-impl<T, P> ImageMut<P> for &mut T
+impl<T> ImageMut for &mut T
 where
-    T: ImageMut<P>,
+    T: ImageMut,
 {
-    fn set_pixel(&mut self, position: (u32, u32), value: P) {
+    type Pixel = T::Pixel;
+
+    fn set_pixel(&mut self, position: (u32, u32), value: Self::Pixel) {
         ImageMut::set_pixel(*self, position, value);
     }
 
-    fn modify_pixel(&mut self, position: (u32, u32), function: Modify<P>) {
+    fn modify_pixel(&mut self, position: (u32, u32), function: Modify<Self::Pixel>) {
         ImageMut::modify_pixel(*self, position, function);
     }
 
-    fn set_horizontal_line(&mut self, position: (u32, u32), plus: u32, value: P) {
+    fn set_horizontal_line(&mut self, position: (u32, u32), plus: u32, value: Self::Pixel) {
         ImageMut::set_horizontal_line(*self, position, plus, value);
     }
 
-    fn modify_horizontal_line(&mut self, position: (u32, u32), plus: u32, function: Modify<P>) {
+    fn modify_horizontal_line(
+        &mut self,
+        position: (u32, u32),
+        plus: u32,
+        function: Modify<Self::Pixel>,
+    ) {
         ImageMut::modify_horizontal_line(*self, position, plus, function);
     }
 
-    fn set(&mut self, value: P) {
+    fn set(&mut self, value: Self::Pixel) {
         ImageMut::set(*self, value);
     }
 
-    fn modify(&mut self, function: Modify<P>) {
+    fn modify(&mut self, function: Modify<Self::Pixel>) {
         ImageMut::modify(*self, function);
     }
 }

@@ -8,7 +8,7 @@ pub struct Shifted<T> {
 
 impl<T> Shifted<T> {
     pub fn new(target: T, shift: (u32, u32)) -> Self {
-        Shifted { shift, target }
+        Self { shift, target }
     }
 
     pub fn extract(self) -> T {
@@ -29,43 +29,52 @@ fn shift((shift_x, shift_y): (u32, u32), (x, y): (u32, u32)) -> (u32, u32) {
     (shift_x + x, shift_y + y)
 }
 
-impl<T, P> Image<P> for Shifted<T>
+impl<T> Image for Shifted<T>
 where
-    T: Image<P>,
+    T: Image,
 {
-    fn pixel(&self, position: (u32, u32)) -> Option<P> {
+    type Pixel = T::Pixel;
+
+    fn pixel(&self, position: (u32, u32)) -> Option<Self::Pixel> {
         let position = shift(self.shift, position);
         self.target.pixel(position)
     }
 }
 
-impl<T, P> ImageMut<P> for Shifted<T>
+impl<T> ImageMut for Shifted<T>
 where
-    T: ImageMut<P>,
-    P: Clone,
+    T: ImageMut,
+    T::Pixel: Clone,
 {
-    fn set_pixel(&mut self, position: (u32, u32), value: P) {
+    type Pixel = T::Pixel;
+
+    fn set_pixel(&mut self, position: (u32, u32), value: Self::Pixel) {
         let position = shift(self.shift, position);
         self.target.set_pixel(position, value);
     }
 
-    fn modify_pixel(&mut self, position: (u32, u32), function: Modify<P>) {
+    fn modify_pixel(&mut self, position: (u32, u32), function: Modify<Self::Pixel>) {
         let position = shift(self.shift, position);
         self.target.modify_pixel(position, function);
     }
 
-    fn set_horizontal_line(&mut self, position: (u32, u32), total: u32, value: P) {
+    fn set_horizontal_line(&mut self, position: (u32, u32), total: u32, value: Self::Pixel) {
         let position = shift(self.shift, position);
         self.target.set_horizontal_line(position, total, value);
     }
 
-    fn modify_horizontal_line(&mut self, position: (u32, u32), total: u32, function: Modify<P>) {
+    fn modify_horizontal_line(
+        &mut self,
+        position: (u32, u32),
+        total: u32,
+        function: Modify<Self::Pixel>,
+    ) {
         let position = shift(self.shift, position);
         self.target
             .modify_horizontal_line(position, total, function);
     }
 
-    fn set(&mut self, value: P) {
+    fn set(&mut self, value: Self::Pixel) {
         let (width, height) = self.target.dimensions();
         let (shift_x, shift_y) = self.shift;
         let total = width - shift_x;
@@ -76,7 +85,7 @@ where
         }
     }
 
-    fn modify(&mut self, function: Modify<P>) {
+    fn modify(&mut self, function: Modify<Self::Pixel>) {
         let (width, height) = self.target.dimensions();
         let (shift_x, shift_y) = self.shift;
         let total = width - shift_x;

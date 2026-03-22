@@ -30,12 +30,14 @@ where
     }
 }
 
-impl<A, B, PA, PB> Image<(PA, PB)> for Zipped<A, B>
+impl<A, B> Image for Zipped<A, B>
 where
-    A: Image<PA>,
-    B: Image<PB>,
+    A: Image,
+    B: Image,
 {
-    fn pixel(&self, position: (u32, u32)) -> Option<(PA, PB)> {
+    type Pixel = (A::Pixel, B::Pixel);
+
+    fn pixel(&self, position: (u32, u32)) -> Option<Self::Pixel> {
         self.first.pixel(position).zip(self.second.pixel(position))
     }
 }

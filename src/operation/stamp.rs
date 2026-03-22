@@ -7,12 +7,16 @@ pub type Action<'a, P, S> = &'a dyn Fn(P, S) -> P;
 
 pub struct Stamp<'a, P, S> {
     position: (i32, i32),
-    stamp: &'a dyn Image<S>,
+    stamp: &'a dyn Image<Pixel = S>,
     action: Action<'a, P, S>,
 }
 
 impl<'a, P, S> Stamp<'a, P, S> {
-    pub fn new(position: (i32, i32), stamp: &'a dyn Image<S>, action: Action<'a, P, S>) -> Self {
+    pub fn new(
+        position: (i32, i32),
+        stamp: &'a dyn Image<Pixel = S>,
+        action: Action<'a, P, S>,
+    ) -> Self {
         Self {
             position,
             stamp,
