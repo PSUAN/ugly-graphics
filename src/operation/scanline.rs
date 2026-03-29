@@ -5,6 +5,12 @@ use crate::utility::{self, swap_if};
 pub mod line;
 pub mod triangle;
 
+fn cut_from_left(range: Range<i32>, position: i32) -> Range<i32> {
+    let start = range.start.max(position);
+    let end = range.end.max(position);
+    start..end
+}
+
 fn merge_ranges(first: Range<i32>, second: Range<i32>) -> Range<i32> {
     let start = first.start.min(second.start);
     let end = first.end.max(second.end);

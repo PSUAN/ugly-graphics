@@ -1,5 +1,6 @@
 pub type Modify<'a, P> = &'a dyn Fn(P) -> P;
 
+#[derive(Clone, Copy)]
 pub enum Strategy<'a, P> {
     Overwrite(P),
     Apply(Modify<'a, P>),

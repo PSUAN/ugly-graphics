@@ -19,5 +19,9 @@ image = { version = "0.25.10", optional = true, default-features = false }
 image = { version = "0.25.10", features = ["png"], default-features = false }
 
 [[example]]
-name = "image-adapter"
+name = "overlapping-triangle"
+required-features = [ "image-adapter" ]
+
+[[example]]
+name = "tiling-triangle"
 required-features = [ "image-adapter" ]
