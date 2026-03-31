@@ -1,9 +1,13 @@
 use crate::strategy::Modify;
 
+pub mod slice_based;
 pub mod sprite;
 
 #[cfg(feature = "image-adapter")]
 pub mod image_adapter;
+
+#[cfg(feature = "bitvec-adapter")]
+pub mod bitvec_adapter;
 
 pub trait Dimensions {
     fn dimensions(&self) -> (u32, u32);
