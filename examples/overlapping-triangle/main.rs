@@ -4,29 +4,45 @@ use std::{env, io};
 use image::codecs::png::PngEncoder;
 use image::{ExtendedColorType, ImageBuffer, ImageEncoder, Rgb};
 use ugly::image::image_adapter::Adapter;
+use ugly::operation::pixel::Pixel;
 use ugly::operation::scanline::triangle::filled::overlapping::OverlappingTriangle;
 use ugly::operation::scanline::triangle::outline::OutlineTriangle;
 use ugly::painter::Painter;
-use ugly::strategy::{IntoApply, IntoOverwrite};
+use ugly::strategy::IntoApply;
 
 fn main() -> io::Result<()> {
     let mut image = ImageBuffer::new(320, 320);
     let mut adapter = Adapter::new(&mut image);
     let mut painter = Painter::new(&mut adapter);
 
-    let triangle = [(10, 10), (160, 130), (40, 310)];
+    let triangle = [(10, 210), (160, 300), (40, 130)];
     painter.draw(OverlappingTriangle::new(
         triangle,
-        Rgb([0x80, 0x00, 0x00]).overwrite(),
-    ));
-    painter.draw(OutlineTriangle::new(
-        triangle,
         (|mut v: Rgb<u8>| {
-            v.0[1] += 0x40;
+            v.0[0] += 0x70;
             v
         })
         .apply(),
     ));
+    painter.draw(OutlineTriangle::new(
+        triangle,
+        (|mut v: Rgb<u8>| {
+            v.0[1] += 0x70;
+            v
+        })
+        .apply(),
+    ));
+
+    for pixel in triangle {
+        painter.draw(Pixel::new(
+            pixel,
+            (|mut v: Rgb<u8>| {
+                v.0[2] += 0x70;
+                v
+            })
+            .apply(),
+        ));
+    }
 
     let mut path = env::current_exe()?;
     path.set_extension("png");

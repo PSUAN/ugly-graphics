@@ -53,8 +53,7 @@ where
         }
 
         // Iterate from the top point to the middle point.
-        let scan =
-            scanline::clamp_range(vertex_a.1..(vertex_b.1), bounding_y.start, bounding_y.end);
+        let scan = scanline::clamp_range(vertex_a.1..vertex_b.1, bounding_y.start, bounding_y.end);
         for y in scan {
             if let Some(first) = scanline::line_scan(vertex_a, vertex_b, y)
                 && let Some(second) = scanline::line_scan(vertex_a, vertex_c, y)
@@ -67,16 +66,13 @@ where
         }
 
         // Special case on the middle point.
-        if let Some(first) = scanline::line_scan(vertex_a, vertex_b, vertex_b.1)
+        if let Some(first) = scanline::line_scan(vertex_a, vertex_c, vertex_b.1)
             && let Some(second) = scanline::line_scan(vertex_b, vertex_c, vertex_b.1)
         {
             let scans = range_overlap_solver(first, second);
             for scan in scans {
                 painter.horizontal_line(scan, vertex_b.1, &self.value);
             }
-        }
-        if let Some(one) = scanline::line_scan(vertex_a, vertex_c, vertex_b.1) {
-            painter.horizontal_line(one, vertex_b.1, &self.value);
         }
 
         // Iterate from the middle point to the end.
