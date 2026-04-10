@@ -6,10 +6,10 @@ use crate::strategy::Strategy;
 use crate::utility;
 
 fn range_overlap_solver(first: Range<i32>, second: Range<i32>) -> [Range<i32>; 2] {
-    let (left, right) = utility::swap_if(first.start > second.start, (first, second));
+    let (left, right) = utility::swap_if(first.start >= second.start, (first, second));
 
     if left.end >= right.start {
-        [left.start..right.end, 0..0]
+        [left.start..left.end.max(right.end), 0..0]
     } else {
         [left, right]
     }
