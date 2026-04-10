@@ -22,6 +22,14 @@ bitvec = { version = "1.0.1", default-features = false }
 image = { version = "0.25.10", features = ["png"], default-features = false }
 
 [[example]]
+name = "adapted-bitvec"
+required-features = ["bitvec-adapter"]
+
+[[example]]
+name = "outline-triangle"
+required-features = ["image-adapter"]
+
+[[example]]
 name = "overlapping-triangle"
 required-features = ["image-adapter"]
 
@@ -31,7 +39,3 @@ required-features = ["image-adapter"]
 
 [[example]]
 name = "slice-based"
-
-[[example]]
-name = "adapted-bitvec"
-required-features = ["bitvec-adapter"]

@@ -6,7 +6,7 @@ use crate::strategy::Strategy;
 use crate::utility;
 
 fn range_overlap_solver(first: Range<i32>, second: Range<i32>) -> [Range<i32>; 2] {
-    let (left, right) = utility::swap_if(first.start >= second.start, (first, second));
+    let (left, right) = utility::swap_if(first.start > second.start, (first, second));
 
     if left.end >= right.start {
         [left.start..right.end, 0..0]
@@ -67,9 +67,11 @@ where
 
         // Special case on the middle point.
         if let Some(first) = scanline::line_scan(vertex_a, vertex_c, vertex_b.1)
-            && let Some(second) = scanline::line_scan(vertex_b, vertex_c, vertex_b.1)
+            && let Some(second) = scanline::line_scan(vertex_a, vertex_b, vertex_b.1)
+            && let Some(third) = scanline::line_scan(vertex_b, vertex_c, vertex_b.1)
         {
-            let scans = range_overlap_solver(first, second);
+            let near_b = scanline::merge_ranges(second, third);
+            let scans = range_overlap_solver(first, near_b);
             for scan in scans {
                 painter.horizontal_line(scan, vertex_b.1, &self.value);
             }

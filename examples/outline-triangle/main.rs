@@ -5,43 +5,37 @@ use image::codecs::png::PngEncoder;
 use image::{ExtendedColorType, ImageBuffer, ImageEncoder, Rgb};
 use ugly::image::image_adapter::Adapter;
 use ugly::operation::pixel::Pixel;
-use ugly::operation::scanline::triangle::filled::overlapping::OverlappingTriangle;
 use ugly::operation::scanline::triangle::outline::OutlineTriangle;
 use ugly::painter::Painter;
-use ugly::strategy::IntoApply;
+use ugly::strategy::{IntoApply, IntoOverwrite};
 
 fn main() -> io::Result<()> {
     let mut image = ImageBuffer::new(320, 320);
     let mut adapter = Adapter::new(&mut image);
     let mut painter = Painter::new(&mut adapter);
 
-    let triangle = [(10, 210), (160, 300), (310, 20)];
-    painter.draw(OverlappingTriangle::new(
-        triangle,
-        (|mut v: Rgb<u8>| {
-            v.0[0] += 0x70;
-            v
-        })
-        .apply(),
-    ));
-    painter.draw(OutlineTriangle::new(
-        triangle,
-        (|mut v: Rgb<u8>| {
-            v.0[1] += 0x70;
-            v
-        })
-        .apply(),
-    ));
-
-    for pixel in triangle {
-        painter.draw(Pixel::new(
-            pixel,
+    let triangles = [
+        [(10, 300), (160, 10), (300, 300)],
+        [(10, 10), (160, 300), (300, 10)],
+        [(10, 160), (300, 10), (300, 300)],
+        [(300, 160), (10, 10), (10, 300)],
+    ];
+    for triangle in triangles {
+        painter.draw(OutlineTriangle::new(
+            triangle,
             (|mut v: Rgb<u8>| {
-                v.0[2] += 0x70;
+                v.0[0] += 0x60;
+                v.0[1] += 0x30;
                 v
             })
             .apply(),
         ));
+    }
+
+    for triangle in triangles {
+        for pixel in triangle {
+            painter.draw(Pixel::new(pixel, Rgb([0xff, 0xff, 0xff]).overwrite()));
+        }
     }
 
     let mut path = env::current_exe()?;
