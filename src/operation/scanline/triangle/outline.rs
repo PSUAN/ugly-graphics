@@ -15,6 +15,7 @@ fn range_overlap_solver(first: Range<i32>, second: Range<i32>) -> [Range<i32>; 2
     }
 }
 
+#[derive(Clone, Copy)]
 pub struct OutlineTriangle<'a, P> {
     vertices: [(i32, i32); 3],
     value: Strategy<'a, P>,

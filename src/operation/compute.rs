@@ -2,6 +2,7 @@ use crate::operation::Operation;
 use crate::painter::Painter;
 use crate::strategy::IntoApply;
 
+#[derive(Clone, Copy)]
 pub struct Compute<'a, P> {
     action: &'a dyn Fn((u32, u32), P) -> P,
 }

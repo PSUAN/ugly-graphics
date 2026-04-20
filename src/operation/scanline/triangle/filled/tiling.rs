@@ -3,6 +3,7 @@ use crate::painter::Painter;
 use crate::strategy::Strategy;
 use crate::utility;
 
+#[derive(Clone, Copy)]
 pub struct TilingTriangle<'a, P> {
     vertices: [(i32, i32); 3],
     value: Strategy<'a, P>,

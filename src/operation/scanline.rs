@@ -3,6 +3,7 @@ use core::ops::Range;
 use crate::utility::{self, swap_if};
 
 pub mod line;
+pub mod rectangle;
 pub mod triangle;
 
 fn cut_from_left(range: Range<i32>, position: i32) -> Range<i32> {

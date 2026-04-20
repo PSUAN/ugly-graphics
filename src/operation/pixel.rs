@@ -3,6 +3,7 @@ use crate::strategy::Strategy;
 
 use super::Operation;
 
+#[derive(Clone, Copy)]
 pub struct Pixel<'a, P> {
     position: (i32, i32),
     value: Strategy<'a, P>,

@@ -14,6 +14,12 @@ impl<'a, P> Painter<'a, P> {
     }
 }
 
+impl<'a, P> Painter<'a, P> {
+    pub fn dimensions(&self) -> (u32, u32) {
+        self.target.dimensions()
+    }
+}
+
 impl<'a, P> Painter<'a, P>
 where
     P: Clone,
@@ -23,10 +29,6 @@ where
         O: Operation<P>,
     {
         operation.draw_on(self)
-    }
-
-    pub fn dimensions(&self) -> (u32, u32) {
-        self.target.dimensions()
     }
 
     pub fn pixel(&mut self, (x, y): (i32, i32), strategy: &Strategy<P>) {

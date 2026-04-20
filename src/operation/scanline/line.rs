@@ -5,6 +5,7 @@ use crate::painter::Painter;
 use crate::strategy::Strategy;
 use crate::utility;
 
+#[derive(Clone, Copy)]
 pub struct Line<'a, P> {
     from: (i32, i32),
     to: (i32, i32),
