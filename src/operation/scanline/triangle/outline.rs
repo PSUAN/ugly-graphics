@@ -1,3 +1,5 @@
+//! An outline triangle is drawn by connecting three vertices.
+
 use core::ops::Range;
 
 use crate::operation::{Operation, scanline};
@@ -15,6 +17,9 @@ fn range_overlap_solver(first: Range<i32>, second: Range<i32>) -> [Range<i32>; 2
     }
 }
 
+/// Outline triangle drawing operation.
+///
+/// Intended to not draw the same pixel more than once.
 #[derive(Clone, Copy)]
 pub struct OutlineTriangle<'a, P> {
     vertices: [(i32, i32); 3],
@@ -22,6 +27,7 @@ pub struct OutlineTriangle<'a, P> {
 }
 
 impl<'a, P> OutlineTriangle<'a, P> {
+    /// Create a new instance to draw using the provided `value`.
     pub fn new(vertices: [(i32, i32); 3], value: Strategy<'a, P>) -> Self {
         Self { vertices, value }
     }
@@ -56,8 +62,8 @@ where
         // Iterate from the top point to the middle point.
         let scan = scanline::clamp_range(vertex_a.1..vertex_b.1, bounding_y.start, bounding_y.end);
         for y in scan {
-            if let Some(first) = scanline::line_scan(vertex_a, vertex_b, y)
-                && let Some(second) = scanline::line_scan(vertex_a, vertex_c, y)
+            if let Some(first) = scanline::segment_scan(vertex_a, vertex_b, y)
+                && let Some(second) = scanline::segment_scan(vertex_a, vertex_c, y)
             {
                 let scans = range_overlap_solver(first, second);
                 for scan in scans {
@@ -67,9 +73,9 @@ where
         }
 
         // Special case on the middle point.
-        if let Some(first) = scanline::line_scan(vertex_a, vertex_c, vertex_b.1)
-            && let Some(second) = scanline::line_scan(vertex_a, vertex_b, vertex_b.1)
-            && let Some(third) = scanline::line_scan(vertex_b, vertex_c, vertex_b.1)
+        if let Some(first) = scanline::segment_scan(vertex_a, vertex_c, vertex_b.1)
+            && let Some(second) = scanline::segment_scan(vertex_a, vertex_b, vertex_b.1)
+            && let Some(third) = scanline::segment_scan(vertex_b, vertex_c, vertex_b.1)
         {
             let near_b = scanline::merge_ranges(second, third);
             let scans = range_overlap_solver(first, near_b);
@@ -85,8 +91,8 @@ where
             bounding_y.end + 1,
         );
         for y in scan {
-            if let Some(first) = scanline::line_scan(vertex_b, vertex_c, y)
-                && let Some(second) = scanline::line_scan(vertex_a, vertex_c, y)
+            if let Some(first) = scanline::segment_scan(vertex_b, vertex_c, y)
+                && let Some(second) = scanline::segment_scan(vertex_a, vertex_c, y)
             {
                 let scans = range_overlap_solver(first, second);
                 for scan in scans {

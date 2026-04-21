@@ -1,16 +1,22 @@
+//! The [`Zipped`] view allows to zip two [`Image`s](`Image`) together for
+//! read operations.
+
 use crate::image::{Dimensions, Image};
 
+/// The view that zips two [`Image`s](`Image`).
 pub struct Zipped<A, B> {
     first: A,
     second: B,
 }
 
 impl<A, B> Zipped<A, B> {
+    /// Create new instance provided two [`Image`s](`Image`).
     pub fn new(first: A, second: B) -> Self {
         Self { first, second }
     }
 
-    pub fn extract(self) -> (A, B) {
+    /// Extract stored values.
+    pub fn into_owned(self) -> (A, B) {
         (self.first, self.second)
     }
 }

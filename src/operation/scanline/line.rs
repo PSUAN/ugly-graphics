@@ -1,3 +1,5 @@
+//! Line drawing using scanlines.
+
 use core::ops::Range;
 
 use crate::operation::Operation;
@@ -5,6 +7,7 @@ use crate::painter::Painter;
 use crate::strategy::Strategy;
 use crate::utility;
 
+/// Line primitive.
 #[derive(Clone, Copy)]
 pub struct Line<'a, P> {
     from: (i32, i32),
@@ -13,6 +16,7 @@ pub struct Line<'a, P> {
 }
 
 impl<'a, P> Line<'a, P> {
+    /// Create a new straight line from given positions and provided `value`.
     pub fn new(from: (i32, i32), to: (i32, i32), value: Strategy<'a, P>) -> Self {
         Self { from, to, value }
     }
@@ -65,8 +69,8 @@ fn vertical_range_in_dimensions(
     // Now we know that our line:
     // - is not vertical;
     // - is at least partly in vertical bounds.
-    let left = super::line_scan(utility::swap(start), utility::swap(end), 0);
-    let right = super::line_scan(
+    let left = super::segment_scan(utility::swap(start), utility::swap(end), 0);
+    let right = super::segment_scan(
         utility::swap(start),
         utility::swap(end),
         dimensions.0 as i32 - 1,
@@ -110,7 +114,7 @@ where
         let dimensions = painter.dimensions();
         if let Some(scan) = vertical_range_in_dimensions(self.from, self.to, dimensions) {
             for scanline in scan {
-                if let Some(range) = super::line_scan(self.from, self.to, scanline) {
+                if let Some(range) = super::segment_scan(self.from, self.to, scanline) {
                     painter.horizontal_line(range, scanline, &self.value);
                 }
             }

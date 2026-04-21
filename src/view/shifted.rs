@@ -1,17 +1,23 @@
+//! The [`Shifted`] view shifts (translates) the stored [`Image`] or
+//! [`ImageMut`] by a positive amount, effectively reducing its size.
+
 use crate::image::{Dimensions, Image, ImageMut};
 use crate::strategy::Modify;
 
+/// The view to shift the coordinates.
 pub struct Shifted<T> {
     shift: (u32, u32),
     target: T,
 }
 
 impl<T> Shifted<T> {
+    /// Create new instance given the `shift` value.
     pub fn new(target: T, shift: (u32, u32)) -> Self {
         Self { shift, target }
     }
 
-    pub fn extract(self) -> T {
+    /// Extract stored `target` value.
+    pub fn into_owned(self) -> T {
         self.target
     }
 }

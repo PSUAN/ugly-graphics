@@ -1,8 +1,11 @@
+//! [`Pixel`] applies a [`Strategy`] to one pixel at the given position.
+
 use crate::painter::Painter;
 use crate::strategy::Strategy;
 
 use super::Operation;
 
+/// Apply [`Strategy`] at the desired position.
 #[derive(Clone, Copy)]
 pub struct Pixel<'a, P> {
     position: (i32, i32),
@@ -10,11 +13,8 @@ pub struct Pixel<'a, P> {
 }
 
 impl<'a, P> Pixel<'a, P> {
-    pub fn new<I>(position: I, value: Strategy<'a, P>) -> Self
-    where
-        I: Into<(i32, i32)>,
-    {
-        let position = position.into();
+    /// Create new instance to apply `value` at the `position`.
+    pub fn new(position: (i32, i32), value: Strategy<'a, P>) -> Self {
         Self { position, value }
     }
 }

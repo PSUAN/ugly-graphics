@@ -75,6 +75,7 @@
 //! ```
 
 #![no_std]
+#![deny(missing_docs)]
 
 pub mod image;
 pub mod operation;

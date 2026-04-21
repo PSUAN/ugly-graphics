@@ -1,17 +1,25 @@
+//! The [`Cropped`] view reduces the available dimensions of the [`Dimensions`]
+//! target stored in it.
+
 use crate::image::{Dimensions, Image, ImageMut};
 use crate::strategy::Modify;
 
+/// The view to reduce dimensions.
+///
+/// Provides both mutable and immutable operations.
 pub struct Cropped<T> {
     dimensions: (u32, u32),
     target: T,
 }
 
 impl<T> Cropped<T> {
+    /// Create a new instance with dimensions to be less or equal to provided.
     pub fn new(target: T, dimensions: (u32, u32)) -> Self {
         Self { dimensions, target }
     }
 
-    pub fn extract(self) -> T {
+    /// Extract stored `target` value.
+    pub fn into_owned(self) -> T {
         self.target
     }
 }

@@ -1,16 +1,21 @@
+//! The [`Mapped`] view provides `mapper` application to the pixels being read.
+
 use crate::image::{Dimensions, Image};
 
+/// The view that applies the `mapper` function to the pixels being read.
 pub struct Mapped<T, F> {
     mapper: F,
     target: T,
 }
 
 impl<T, F> Mapped<T, F> {
+    /// Create new instance using the provided `mapper`.
     pub fn new(target: T, mapper: F) -> Self {
         Self { mapper, target }
     }
 
-    pub fn extract(self) -> T {
+    /// Extract stored `target` value.
+    pub fn into_owned(self) -> T {
         self.target
     }
 }

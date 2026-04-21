@@ -1,8 +1,14 @@
+//! Outline rectangle primitive.
+
 use crate::operation::Operation;
 use crate::painter::Painter;
 use crate::strategy::Strategy;
 use crate::utility;
 
+/// A filled rectangle drawing operation.
+///
+/// Draws at least one pixel, supports any order of corners.
+/// Does not draw the same pixel more than once.
 pub struct OutlineRectangle<'a, P> {
     from: (i32, i32),
     to: (i32, i32),
@@ -10,6 +16,9 @@ pub struct OutlineRectangle<'a, P> {
 }
 
 impl<'a, P> OutlineRectangle<'a, P> {
+    /// Create a new instance to draw using the provided `value`.
+    ///
+    /// The `from` and `to` coordinates are included.
     pub fn new(from: (i32, i32), to: (i32, i32), value: Strategy<'a, P>) -> Self {
         Self { from, to, value }
     }

@@ -1,3 +1,9 @@
+//! This module provides a set of scanline-based drawing operations.
+//!
+//! Scanline is a concept of drawing optimization approach.
+//! It relies on the assumption that drawing consecutive pixels takes less time
+//! than drawing each pixel individually.
+
 use core::ops::Range;
 
 use crate::utility::{self, swap_if};
@@ -30,13 +36,15 @@ fn estimate_bounding_box(vertices: &[(i32, i32)]) -> Option<(Range<i32>, Range<i
     Some((min_x..max_x, min_y..max_y))
 }
 
-pub fn clamp_range(range: Range<i32>, start: i32, end: i32) -> Range<i32> {
+fn clamp_range(range: Range<i32>, start: i32, end: i32) -> Range<i32> {
     let start = range.start.max(start);
     let end = range.end.min(end);
     start..end
 }
 
-pub fn line_scan(start: (i32, i32), end: (i32, i32), scan: i32) -> Option<Range<i32>> {
+/// Compute intersection between a segment (`start`-`end`) and a horizontal
+/// line located at `scan`.
+pub fn segment_scan(start: (i32, i32), end: (i32, i32), scan: i32) -> Option<Range<i32>> {
     // Sort to make the line go from "top" to "bottom".
     let (start, end) = utility::swap_if(start.1 > end.1, (start, end));
 
@@ -77,21 +85,21 @@ mod test {
     #[test]
     fn line_scan_works() {
         let (start, end) = ((0, 0), (5, 2));
-        assert_eq!(line_scan(start, end, -1), None);
-        assert_eq!(line_scan(start, end, 0), Some(0..2));
-        assert_eq!(line_scan(start, end, 1), Some(2..4));
-        assert_eq!(line_scan(start, end, 2), Some(4..6));
-        assert_eq!(line_scan(start, end, 3), None);
+        assert_eq!(segment_scan(start, end, -1), None);
+        assert_eq!(segment_scan(start, end, 0), Some(0..2));
+        assert_eq!(segment_scan(start, end, 1), Some(2..4));
+        assert_eq!(segment_scan(start, end, 2), Some(4..6));
+        assert_eq!(segment_scan(start, end, 3), None);
 
         let (start, end) = ((1, 2), (3, 0));
-        assert_eq!(line_scan(start, end, 0), Some(3..4));
-        assert_eq!(line_scan(start, end, 1), Some(2..3));
-        assert_eq!(line_scan(start, end, 2), Some(1..2));
-        assert_eq!(line_scan(start, end, 3), None);
+        assert_eq!(segment_scan(start, end, 0), Some(3..4));
+        assert_eq!(segment_scan(start, end, 1), Some(2..3));
+        assert_eq!(segment_scan(start, end, 2), Some(1..2));
+        assert_eq!(segment_scan(start, end, 3), None);
 
         let (start, end) = ((-1, 4), (3, 4));
-        assert_eq!(line_scan(start, end, 3), None);
-        assert_eq!(line_scan(start, end, 4), Some(-1..4));
-        assert_eq!(line_scan(start, end, 5), None);
+        assert_eq!(segment_scan(start, end, 3), None);
+        assert_eq!(segment_scan(start, end, 4), Some(-1..4));
+        assert_eq!(segment_scan(start, end, 5), None);
     }
 }

@@ -1,8 +1,12 @@
+//! The tiling triangle allows to draw two adjacent triangles without
+//! overlapping.
+
 use crate::operation::{Operation, scanline};
 use crate::painter::Painter;
 use crate::strategy::Strategy;
 use crate::utility;
 
+/// A tiling triangle.
 #[derive(Clone, Copy)]
 pub struct TilingTriangle<'a, P> {
     vertices: [(i32, i32); 3],
@@ -10,6 +14,7 @@ pub struct TilingTriangle<'a, P> {
 }
 
 impl<'a, P> TilingTriangle<'a, P> {
+    /// Create a new instance to draw using the provided `value`.
     pub fn new(vertices: [(i32, i32); 3], value: Strategy<'a, P>) -> Self {
         Self { vertices, value }
     }
@@ -49,8 +54,8 @@ where
             bounding_y.end,
         );
         for y in scan {
-            if let Some(first) = scanline::line_scan(vertex_a, vertex_b, y)
-                && let Some(second) = scanline::line_scan(vertex_a, vertex_c, y)
+            if let Some(first) = scanline::segment_scan(vertex_a, vertex_b, y)
+                && let Some(second) = scanline::segment_scan(vertex_a, vertex_c, y)
             {
                 let left = if first.start < second.start {
                     first.end
@@ -70,8 +75,8 @@ where
             bounding_y.end + 1,
         );
         for y in scan {
-            if let Some(first) = scanline::line_scan(vertex_b, vertex_c, y)
-                && let Some(second) = scanline::line_scan(vertex_a, vertex_c, y)
+            if let Some(first) = scanline::segment_scan(vertex_b, vertex_c, y)
+                && let Some(second) = scanline::segment_scan(vertex_a, vertex_c, y)
             {
                 let left = if first.start < second.start {
                     first.end

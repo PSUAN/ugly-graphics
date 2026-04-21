@@ -1,11 +1,17 @@
+//! The [`Rotated`] view provides read operations from the rotated `Image`.
+
 use crate::image::{Dimensions, Image};
 
+/// Rotation direction.
 #[derive(Clone, Copy, Debug)]
 pub enum Rotation {
+    /// Clockwise rotation by 90 degrees.
     Clockwise,
+    /// Counter-clockwise rotation by 90 degrees.
     CounterClockwise,
 }
 
+/// The view that rotates the [`Image`].
 pub struct Rotated<T> {
     rotation: Rotation,
     target: T,
@@ -23,21 +29,25 @@ fn transform(
 }
 
 impl<T> Rotated<T> {
+    /// Create new instance using the provided `rotation`.
     pub fn new(target: T, rotation: Rotation) -> Self {
         Self { rotation, target }
     }
 
+    /// Create new clockwise instance.
     pub fn clockwise(target: T) -> Self {
         let rotation = Rotation::Clockwise;
         Self { rotation, target }
     }
 
+    /// Create new counter-clockwise instance.
     pub fn counter_clockwise(target: T) -> Self {
         let rotation = Rotation::CounterClockwise;
         Self { rotation, target }
     }
 
-    pub fn extract(self) -> T {
+    /// Extract stored `target` value.
+    pub fn into_owned(self) -> T {
         self.target
     }
 }

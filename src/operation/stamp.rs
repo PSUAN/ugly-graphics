@@ -1,10 +1,16 @@
+//! The [`Stamp`] applies an [`Image`] using provided [`Action`].
+
 use crate::image::Image;
 use crate::operation::Operation;
 use crate::painter::Painter;
 use crate::strategy::IntoApply;
 
+/// Action that computes the resulting pixel value `P` given the original `P`
+/// and provided `S` values.
 pub type Action<'a, P, S> = &'a dyn Fn(P, S) -> P;
 
+/// The stamping operation to apply an [`Image`] over some [`Painter`].
+#[derive(Clone, Copy)]
 pub struct Stamp<'a, P, S> {
     position: (i32, i32),
     stamp: &'a dyn Image<Pixel = S>,
@@ -12,6 +18,7 @@ pub struct Stamp<'a, P, S> {
 }
 
 impl<'a, P, S> Stamp<'a, P, S> {
+    /// Create new instance for stamping provided `stamp` over the [`Painter`].
     pub fn new(
         position: (i32, i32),
         stamp: &'a dyn Image<Pixel = S>,

@@ -1,8 +1,14 @@
+//! The overlapping triangle includes all three points.
+//!
+//! The [`Line`s](`crate::operation::scanline::line::Line`) drawn between its
+//! vertices would overlap the triangle.
+
 use crate::operation::{Operation, scanline};
 use crate::painter::Painter;
 use crate::strategy::Strategy;
 use crate::utility;
 
+/// An overlapping triangle.
 #[derive(Clone, Copy)]
 pub struct OverlappingTriangle<'a, P> {
     vertices: [(i32, i32); 3],
@@ -10,6 +16,7 @@ pub struct OverlappingTriangle<'a, P> {
 }
 
 impl<'a, P> OverlappingTriangle<'a, P> {
+    /// Create a new instance to draw using the provided `value`.
     pub fn new(vertices: [(i32, i32); 3], value: Strategy<'a, P>) -> Self {
         Self { vertices, value }
     }
@@ -45,16 +52,16 @@ where
         // Iterate from the top point to the middle point.
         let scan = scanline::clamp_range(vertex_a.1..vertex_b.1, bounding_y.start, bounding_y.end);
         for y in scan {
-            if let Some(first) = scanline::line_scan(vertex_a, vertex_b, y)
-                && let Some(second) = scanline::line_scan(vertex_a, vertex_c, y)
+            if let Some(first) = scanline::segment_scan(vertex_a, vertex_b, y)
+                && let Some(second) = scanline::segment_scan(vertex_a, vertex_c, y)
             {
                 let scan = scanline::merge_ranges(first, second);
                 painter.horizontal_line(scan, y, &self.value);
             }
         }
 
-        if let Some(first) = scanline::line_scan(vertex_a, vertex_b, vertex_b.1)
-            && let Some(second) = scanline::line_scan(vertex_a, vertex_c, vertex_b.1)
+        if let Some(first) = scanline::segment_scan(vertex_a, vertex_b, vertex_b.1)
+            && let Some(second) = scanline::segment_scan(vertex_a, vertex_c, vertex_b.1)
         {
             let scan = scanline::merge_ranges(first, second);
             painter.horizontal_line(scan, vertex_b.1, &self.value);
@@ -67,8 +74,8 @@ where
             bounding_y.end + 1,
         );
         for y in scan {
-            if let Some(first) = scanline::line_scan(vertex_b, vertex_c, y)
-                && let Some(second) = scanline::line_scan(vertex_a, vertex_c, y)
+            if let Some(first) = scanline::segment_scan(vertex_b, vertex_c, y)
+                && let Some(second) = scanline::segment_scan(vertex_a, vertex_c, y)
             {
                 let scan = scanline::merge_ranges(first, second);
                 painter.horizontal_line(scan, y, &self.value);

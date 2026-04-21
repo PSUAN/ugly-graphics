@@ -1,12 +1,20 @@
+//! The [`Flipped`] view allows to flip coordinates along single axis.
+
 use crate::image::{Dimensions, Image, ImageMut};
 use crate::strategy::Modify;
 
+/// The flip direction.
 #[derive(Clone, Copy, Debug)]
 pub enum Flip {
+    /// The left-to-right flip.
     Horizontal,
+    /// The top-to-bottom flip.
     Vertical,
 }
 
+/// The view to flip coordinates.
+///
+/// Provides both mutable and immutable operations.
 pub struct Flipped<T> {
     direction: Flip,
     target: T,
@@ -41,21 +49,25 @@ fn transform_scan(
 }
 
 impl<T> Flipped<T> {
+    /// Create new instance using the provided `direction`.
     pub fn new(target: T, direction: Flip) -> Self {
         Self { direction, target }
     }
 
+    /// Create the horizontal (left-to-right) flip instance.
     pub fn horizontal(target: T) -> Self {
         let direction = Flip::Horizontal;
         Self { direction, target }
     }
 
+    /// Create the vertical (top-to-bottom) flip instance.
     pub fn vertical(target: T) -> Self {
         let direction = Flip::Vertical;
         Self { direction, target }
     }
 
-    pub fn extract(self) -> T {
+    /// Extract stored `target` value.
+    pub fn into_owned(self) -> T {
         self.target
     }
 }
