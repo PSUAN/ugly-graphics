@@ -2,9 +2,11 @@ use ugly::image::sprite::Sprite;
 use ugly::operation::compute::Compute;
 use ugly::operation::pixel::Pixel;
 use ugly::operation::scanline::line::Line;
+use ugly::operation::scanline::rectangle::filled::FilledRectangle;
+use ugly::operation::scanline::rectangle::outline::OutlineRectangle;
 use ugly::operation::stamp::Stamp;
 use ugly::painter::Painter;
-use ugly::strategy::{IntoApply, IntoOverwrite};
+use ugly::strategy::{IntoApply as _, IntoOverwrite as _, Strategy};
 use ugly::view::cropped::Cropped;
 use ugly::view::flipped::Flipped;
 use ugly::view::rotated::Rotated;
@@ -100,5 +102,32 @@ fn gradient() {
         [0x00, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x00],
         [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
     ]);
+    assert_eq!(sprite, expected);
+}
+
+#[test]
+fn rectangles() {
+    let mut sprite = Sprite::<u8, 16, 8>::from_copies(b' ');
+    let mut painter = Painter::new(&mut sprite);
+
+    let delta = b'#' - b' ';
+    let apply = |v| v + delta;
+    let rectangle = OutlineRectangle::new((14, 1), (1, 6), Strategy::Apply(&apply));
+    painter.draw(rectangle);
+
+    let rectangle = FilledRectangle::new((3, 3), (12, 4), Strategy::Overwrite(b'+'));
+    painter.draw(rectangle);
+
+    let raw = [
+        b"                ",
+        b" ############## ",
+        b" #            # ",
+        b" # ++++++++++ # ",
+        b" # ++++++++++ # ",
+        b" #            # ",
+        b" ############## ",
+        b"                ",
+    ];
+    let expected = Sprite::from_raw(raw.map(Clone::clone));
     assert_eq!(sprite, expected);
 }

@@ -10,8 +10,8 @@ readme = "README.md"
 
 [features]
 default = []
-image-adapter = ["dep:image"]
 bitvec-adapter = ["dep:bitvec"]
+image-adapter = ["dep:image"]
 
 [dependencies]
 bitvec = { version = "1.0.1", optional = true, default-features = false }
@@ -38,4 +38,5 @@ name = "tiling-triangle"
 required-features = ["image-adapter"]
 
 [[example]]
-name = "slice-based"
+name = "minimal"
+required-features = ["image-adapter"]

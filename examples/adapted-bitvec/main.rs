@@ -4,9 +4,12 @@ use ugly::operation::scanline::triangle::outline::OutlineTriangle;
 use ugly::painter::Painter;
 use ugly::strategy::IntoOverwrite;
 
+const WIDTH: usize = 128;
+const HEIGHT: usize = 64;
+
 fn main() {
-    let mut data = bitarr![0; 128 * 64];
-    let mut adapter = Adapter::new_mut(&mut data, 128).unwrap();
+    let mut data = bitarr![0; WIDTH * HEIGHT];
+    let mut adapter = Adapter::new_mut(&mut data, WIDTH as _).unwrap();
     let mut painter = Painter::new(&mut adapter);
 
     painter.draw(OutlineTriangle::new(

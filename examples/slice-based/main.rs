@@ -7,9 +7,10 @@ use ugly::painter::Painter;
 use ugly::strategy::{IntoApply as _, IntoOverwrite as _};
 
 const WIDTH: usize = 32;
+const HEIGHT: usize = 32;
 
 fn main() {
-    let slice = vec![' '; WIDTH * 32].into_boxed_slice();
+    let slice = vec![' '; WIDTH * HEIGHT].into_boxed_slice();
 
     let mut slice_based = SliceBased::new(slice, WIDTH as u32).unwrap();
 

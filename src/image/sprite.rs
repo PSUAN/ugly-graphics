@@ -1,12 +1,28 @@
+//! A compile-time sized array-based pixel storage.
+//!
+//! ```rust
+//! # use ugly::image::sprite::Sprite;
+//! # use ugly::image::{Image as _, ImageMut as _};
+//! fn main() {
+//!     let mut sprite = Sprite::<_, 4, 4>::from_copies(b' ');
+//!     sprite.set_pixel((3, 3), b'!');
+//!     assert_eq!(sprite.pixel((3, 3)), Some(b'!'));
+//! }
+//! ```
+
 use crate::image::{Dimensions, Image, ImageMut};
 use crate::strategy::Modify;
 
+/// A compile-time sized array-based pixel storage.
+///
+/// Current implementation is backed by a two-dimensional array.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Sprite<P, const W: usize, const H: usize> {
     data: [[P; W]; H],
 }
 
 impl<P, const W: usize, const H: usize> Sprite<P, W, H> {
+    /// Create a new [`Sprite`] instance using [`Copy`] trait.
     pub fn from_copies(value: P) -> Self
     where
         P: Copy,
@@ -15,8 +31,14 @@ impl<P, const W: usize, const H: usize> Sprite<P, W, H> {
         Self { data }
     }
 
+    /// Create a new [`Sprite`] instance using raw `data`.
     pub fn from_raw(data: [[P; W]; H]) -> Self {
         Self { data }
+    }
+
+    /// Extract stored `data`.
+    pub fn into_owned(self) -> [[P; W]; H] {
+        self.data
     }
 }
 

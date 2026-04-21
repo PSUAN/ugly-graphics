@@ -1,3 +1,18 @@
+//! An adapter to [`ImageBuffer`].
+//!
+//! ```rust
+//! # use ugly::image::image_adapter::Adapter;
+//! # use ugly::image::ImageMut;
+//! # use image::{ImageBuffer, Rgb};
+//! fn main() {
+//!     let mut image = ImageBuffer::new(320, 320);
+//!     let mut adapter = Adapter::new(&mut image);
+//!     adapter.set_pixel((1, 1), Rgb([0xff, 0xff, 0xff]));
+//! }
+//! ```
+
+pub use image;
+
 use core::ops::{Deref, DerefMut};
 
 use image::ImageBuffer;
@@ -6,11 +21,18 @@ use crate::strategy::Modify;
 
 use super::{Dimensions, Image, ImageMut};
 
+/// An adapter over `T`.
+///
+/// Implementations are for the following `T`:
+///
+/// - `&ImageBuffer` - immutable [`Image`]-only operations;
+/// - `&mut ImageBuffer` - mutable [`Image`] and [`ImageMut`] operations.
 pub struct Adapter<T> {
     buffer: T,
 }
 
 impl<T> Adapter<T> {
+    /// Create new [`Adapter`] instance.
     pub fn new(buffer: T) -> Self {
         Self { buffer }
     }

@@ -1,8 +1,24 @@
+//! A slice-based pixel storage.
+//!
+//! Uses any [`Deref<Target = [P]>`](core::ops::Deref) as pixel storage.
+//!
+//! ```rust
+//! # use ugly::image::slice_based::SliceBased;
+//! # use ugly::image::{Image as _, ImageMut as _};
+//! fn main() {
+//!     let data = vec![0; 32 * 16];
+//!     let mut slice_based = SliceBased::new(data, 32).unwrap();
+//!     slice_based.set_pixel((1, 1), 4);
+//!     assert_eq!(slice_based.pixel((1, 1)), Some(4));
+//! }
+//! ```
+
 use core::ops;
 
 use crate::image::{Dimensions, Image, ImageMut};
 use crate::strategy::Modify;
 
+/// Slice-based storage for pixels.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct SliceBased<T> {
     data: T,
@@ -11,6 +27,9 @@ pub struct SliceBased<T> {
 }
 
 impl<T> SliceBased<T> {
+    /// Try constructing new instance using provided `data` and `width`.
+    ///
+    /// Returns `None` if `data`'s length is not a multiple of `width`.
     pub fn new<P>(data: T, width: u32) -> Option<Self>
     where
         T: ops::Deref<Target = [P]>,
@@ -27,6 +46,7 @@ impl<T> SliceBased<T> {
         })
     }
 
+    /// Extract stored `data`.
     pub fn to_owned(self) -> T {
         self.data
     }
