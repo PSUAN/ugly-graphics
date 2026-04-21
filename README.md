@@ -1,4 +1,4 @@
-# `ugly`
+# `ugly-graphics`
 
 Ugly library for ugly graphics operations on CPU.
 
@@ -61,4 +61,4 @@ fn main() -> io::Result<()> {
 
 ## License
 
-The `ugly` crate is distributed under the `MIT` license.
+The `ugly_graphics` crate is distributed under the `MIT` license.

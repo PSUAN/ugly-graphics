@@ -1,4 +1,4 @@
-//! `ugly` is a library dedicated to performing drawing operations on CPU.
+//! `ugly_graphics` is a library dedicated to performing drawing operations on CPU.
 //! It aims to provide simple extendable API focusing on either pixel overwriting or modification via an apply function.
 //!
 //! # Abstractions
@@ -21,12 +21,12 @@
 //! to call draw methods of specific `Operations`:
 //!
 //! ```rust
-//! # use ugly::image::sprite::Sprite;
-//! # use ugly::operation::scanline::line::Line;
-//! # use ugly::operation::scanline::rectangle::filled::FilledRectangle;
-//! # use ugly::operation::scanline::rectangle::outline::OutlineRectangle;
-//! # use ugly::painter::Painter;
-//! # use ugly::strategy::Strategy;
+//! # use ugly_graphics::image::sprite::Sprite;
+//! # use ugly_graphics::operation::scanline::line::Line;
+//! # use ugly_graphics::operation::scanline::rectangle::filled::FilledRectangle;
+//! # use ugly_graphics::operation::scanline::rectangle::outline::OutlineRectangle;
+//! # use ugly_graphics::painter::Painter;
+//! # use ugly_graphics::strategy::Strategy;
 //! #
 //! # fn main() {
 //!     // Create a sprite to store our data.

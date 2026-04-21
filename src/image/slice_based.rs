@@ -3,8 +3,8 @@
 //! Uses any [`Deref<Target = [P]>`](core::ops::Deref) as pixel storage.
 //!
 //! ```rust
-//! # use ugly::image::slice_based::SliceBased;
-//! # use ugly::image::{Image as _, ImageMut as _};
+//! # use ugly_graphics::image::slice_based::SliceBased;
+//! # use ugly_graphics::image::{Image as _, ImageMut as _};
 //! fn main() {
 //!     let data = vec![0; 32 * 16];
 //!     let mut slice_based = SliceBased::new(data, 32).unwrap();

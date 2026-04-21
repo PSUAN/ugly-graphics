@@ -1,8 +1,8 @@
 //! A compile-time sized array-based pixel storage.
 //!
 //! ```rust
-//! # use ugly::image::sprite::Sprite;
-//! # use ugly::image::{Image as _, ImageMut as _};
+//! # use ugly_graphics::image::sprite::Sprite;
+//! # use ugly_graphics::image::{Image as _, ImageMut as _};
 //! fn main() {
 //!     let mut sprite = Sprite::<_, 4, 4>::from_copies(b' ');
 //!     sprite.set_pixel((3, 3), b'!');

@@ -3,11 +3,11 @@ use std::{env, io};
 
 use image::codecs::png::PngEncoder;
 use image::{ExtendedColorType, ImageBuffer, ImageEncoder, Rgb};
-use ugly::image::image_adapter::Adapter;
-use ugly::operation::pixel::Pixel;
-use ugly::operation::scanline::triangle::outline::OutlineTriangle;
-use ugly::painter::Painter;
-use ugly::strategy::{IntoApply, IntoOverwrite};
+use ugly_graphics::image::image_adapter::Adapter;
+use ugly_graphics::operation::pixel::Pixel;
+use ugly_graphics::operation::scanline::triangle::outline::OutlineTriangle;
+use ugly_graphics::painter::Painter;
+use ugly_graphics::strategy::{IntoApply, IntoOverwrite};
 
 fn main() -> io::Result<()> {
     let mut image = ImageBuffer::new(320, 320);

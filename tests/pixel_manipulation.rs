@@ -1,16 +1,16 @@
-use ugly::image::sprite::Sprite;
-use ugly::operation::compute::Compute;
-use ugly::operation::pixel::Pixel;
-use ugly::operation::scanline::line::Line;
-use ugly::operation::scanline::rectangle::filled::FilledRectangle;
-use ugly::operation::scanline::rectangle::outline::OutlineRectangle;
-use ugly::operation::stamp::Stamp;
-use ugly::painter::Painter;
-use ugly::strategy::{IntoApply as _, IntoOverwrite as _, Strategy};
-use ugly::view::cropped::Cropped;
-use ugly::view::flipped::Flipped;
-use ugly::view::rotated::Rotated;
-use ugly::view::shifted::Shifted;
+use ugly_graphics::image::sprite::Sprite;
+use ugly_graphics::operation::compute::Compute;
+use ugly_graphics::operation::pixel::Pixel;
+use ugly_graphics::operation::scanline::line::Line;
+use ugly_graphics::operation::scanline::rectangle::filled::FilledRectangle;
+use ugly_graphics::operation::scanline::rectangle::outline::OutlineRectangle;
+use ugly_graphics::operation::stamp::Stamp;
+use ugly_graphics::painter::Painter;
+use ugly_graphics::strategy::{IntoApply as _, IntoOverwrite as _, Strategy};
+use ugly_graphics::view::cropped::Cropped;
+use ugly_graphics::view::flipped::Flipped;
+use ugly_graphics::view::rotated::Rotated;
+use ugly_graphics::view::shifted::Shifted;
 
 #[test]
 fn pixels_are_manipulated() {

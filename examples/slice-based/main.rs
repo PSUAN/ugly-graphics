@@ -1,10 +1,10 @@
-use ugly::image::slice_based::SliceBased;
-use ugly::operation::scanline::rectangle::filled::FilledRectangle;
-use ugly::operation::scanline::rectangle::outline::OutlineRectangle;
-use ugly::operation::scanline::triangle::filled::overlapping::OverlappingTriangle;
-use ugly::operation::scanline::triangle::outline::OutlineTriangle;
-use ugly::painter::Painter;
-use ugly::strategy::{IntoApply as _, IntoOverwrite as _};
+use ugly_graphics::image::slice_based::SliceBased;
+use ugly_graphics::operation::scanline::rectangle::filled::FilledRectangle;
+use ugly_graphics::operation::scanline::rectangle::outline::OutlineRectangle;
+use ugly_graphics::operation::scanline::triangle::filled::overlapping::OverlappingTriangle;
+use ugly_graphics::operation::scanline::triangle::outline::OutlineTriangle;
+use ugly_graphics::painter::Painter;
+use ugly_graphics::strategy::{IntoApply as _, IntoOverwrite as _};
 
 const WIDTH: usize = 32;
 const HEIGHT: usize = 32;

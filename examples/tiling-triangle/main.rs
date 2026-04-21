@@ -3,12 +3,12 @@ use std::{env, io};
 
 use image::codecs::png::PngEncoder;
 use image::{ExtendedColorType, ImageBuffer, ImageEncoder, Pixel, Rgba};
-use ugly::image::ImageMut;
-use ugly::image::image_adapter::Adapter;
-use ugly::operation::pixel;
-use ugly::operation::scanline::triangle::filled::tiling::TilingTriangle;
-use ugly::painter::Painter;
-use ugly::strategy::{IntoApply, IntoOverwrite};
+use ugly_graphics::image::ImageMut;
+use ugly_graphics::image::image_adapter::Adapter;
+use ugly_graphics::operation::pixel;
+use ugly_graphics::operation::scanline::triangle::filled::tiling::TilingTriangle;
+use ugly_graphics::painter::Painter;
+use ugly_graphics::strategy::{IntoApply, IntoOverwrite};
 
 fn strategy(addition: Rgba<u8>) -> impl Fn(Rgba<u8>) -> Rgba<u8> {
     move |mut v| {

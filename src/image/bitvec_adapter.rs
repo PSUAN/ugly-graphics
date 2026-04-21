@@ -1,7 +1,7 @@
 //! An adapter to store [`BitSlice`] data and use it as a `1BPP` pixel storage.
 //!
 //! ```rust
-//! # use ugly::image::bitvec_adapter::Adapter;
+//! # use ugly_graphics::image::bitvec_adapter::Adapter;
 //! # use bitvec::bitarr;
 //! # const WIDTH: usize = 128;
 //! # const HEIGHT: usize = 64;

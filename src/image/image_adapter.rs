@@ -1,8 +1,8 @@
 //! An adapter to [`ImageBuffer`].
 //!
 //! ```rust
-//! # use ugly::image::image_adapter::Adapter;
-//! # use ugly::image::ImageMut;
+//! # use ugly_graphics::image::image_adapter::Adapter;
+//! # use ugly_graphics::image::ImageMut;
 //! # use image::{ImageBuffer, Rgb};
 //! fn main() {
 //!     let mut image = ImageBuffer::new(320, 320);

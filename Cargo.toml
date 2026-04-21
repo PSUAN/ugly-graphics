@@ -1,10 +1,13 @@
 [package]
-name = "ugly"
+name = "ugly-graphics"
 version = "0.1.0"
 edition = "2024"
 authors = ["PSUAN collective", "Hara Red <rtc6fg4.fejg2@gmail.com>"]
 description = "Ugly graphics on CPU"
+repository = "https://github.com/PSUAN/ugly-graphics"
 license = "MIT"
+homepage = "https://github.com/PSUAN/ugly-graphics"
+documentation = "https://docs.rs/ugly-graphics"
 keywords = ["graphics"]
 readme = "README.md"
 

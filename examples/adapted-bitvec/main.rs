@@ -1,8 +1,8 @@
 use bitvec::bitarr;
-use ugly::image::bitvec_adapter::Adapter;
-use ugly::operation::scanline::triangle::outline::OutlineTriangle;
-use ugly::painter::Painter;
-use ugly::strategy::IntoOverwrite;
+use ugly_graphics::image::bitvec_adapter::Adapter;
+use ugly_graphics::operation::scanline::triangle::outline::OutlineTriangle;
+use ugly_graphics::painter::Painter;
+use ugly_graphics::strategy::IntoOverwrite;
 
 const WIDTH: usize = 128;
 const HEIGHT: usize = 64;

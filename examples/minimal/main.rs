@@ -3,10 +3,10 @@ use std::{env, io};
 
 use image::codecs::png::PngEncoder;
 use image::{ExtendedColorType, ImageBuffer, ImageEncoder, Rgb};
-use ugly::image::image_adapter::Adapter;
-use ugly::operation::scanline::triangle::filled::overlapping::OverlappingTriangle;
-use ugly::painter::Painter;
-use ugly::strategy::IntoOverwrite;
+use ugly_graphics::image::image_adapter::Adapter;
+use ugly_graphics::operation::scanline::triangle::filled::overlapping::OverlappingTriangle;
+use ugly_graphics::painter::Painter;
+use ugly_graphics::strategy::IntoOverwrite;
 
 fn main() -> io::Result<()> {
     let mut image = ImageBuffer::new(320, 320);
