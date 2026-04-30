@@ -73,7 +73,7 @@ fn vertical_range_in_dimensions(
     let right = super::segment_scan(
         utility::swap(start),
         utility::swap(end),
-        dimensions.0 as i32 - 1,
+        dimensions.0 as i32,
     );
     let range = match (left, right) {
         (None, None) => {
@@ -88,12 +88,12 @@ fn vertical_range_in_dimensions(
             if start.0 < end.0 {
                 extend_range_to(right, start.1)
             } else {
-                extend_range_to(right, end.1)
+                extend_range_to(right, end.1 + 1)
             }
         }
         (Some(left), None) => {
             if start.0 < end.0 {
-                extend_range_to(left, end.1)
+                extend_range_to(left, end.1 + 1)
             } else {
                 extend_range_to(left, start.1)
             }
