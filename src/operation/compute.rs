@@ -2,7 +2,7 @@
 
 use crate::operation::Operation;
 use crate::painter::Painter;
-use crate::strategy::IntoApply;
+use crate::strategy::apply;
 
 /// An operation to be applied to every pixel of a painter.
 #[derive(Clone, Copy)]
@@ -27,7 +27,7 @@ where
         let (width, height) = painter.dimensions();
         for y in 0..height {
             for x in 0..width {
-                painter.pixel((x as _, y as _), &(|v| (self.action)((x, y), v)).apply());
+                painter.pixel((x as _, y as _), &apply(&|v| (self.action)((x, y), v)));
             }
         }
     }

@@ -8,7 +8,7 @@ use ugly_graphics::image::image_adapter::Adapter;
 use ugly_graphics::operation::pixel;
 use ugly_graphics::operation::scanline::triangle::filled::tiling::TilingTriangle;
 use ugly_graphics::painter::Painter;
-use ugly_graphics::strategy::{IntoApply, IntoOverwrite};
+use ugly_graphics::strategy::{apply, overwrite};
 
 fn strategy(addition: Rgba<u8>) -> impl Fn(Rgba<u8>) -> Rgba<u8> {
     move |mut v| {
@@ -28,35 +28,35 @@ fn main() -> io::Result<()> {
 
     painter.draw(TilingTriangle::new(
         [vertices[0], vertices[1], vertices[2]],
-        (strategy(Rgba([0x80, 0x00, 0x00, 0x80]))).apply(),
+        apply(&strategy(Rgba([0x80, 0x00, 0x00, 0x80]))),
     ));
     painter.draw(TilingTriangle::new(
         [vertices[1], vertices[2], vertices[3]],
-        (strategy(Rgba([0x00, 0x80, 0x00, 0x80]))).apply(),
+        apply(&strategy(Rgba([0x00, 0x80, 0x00, 0x80]))),
     ));
     painter.draw(TilingTriangle::new(
         [vertices[1], vertices[3], vertices[4]],
-        (strategy(Rgba([0x00, 0x00, 0x80, 0x80]))).apply(),
+        apply(&strategy(Rgba([0x00, 0x00, 0x80, 0x80]))),
     ));
     painter.draw(TilingTriangle::new(
         [vertices[0], vertices[1], vertices[4]],
-        (strategy(Rgba([0x40, 0x40, 0x40, 0x80]))).apply(),
+        apply(&strategy(Rgba([0x40, 0x40, 0x40, 0x80]))),
     ));
     for vertex in vertices {
-        painter.draw(pixel::Pixel::new(vertex, Rgba([0xff; 4]).overwrite()));
+        painter.draw(pixel::Pixel::new(vertex, overwrite(Rgba([0xff; 4]))));
     }
 
     let vertices = [(10, 130), (310, 130), (130, 10), (130, 310)];
     painter.draw(TilingTriangle::new(
         [vertices[0], vertices[1], vertices[2]],
-        (strategy(Rgba([0x80, 0x00, 0x00, 0x80]))).apply(),
+        apply(&strategy(Rgba([0x80, 0x00, 0x00, 0x80]))),
     ));
     painter.draw(TilingTriangle::new(
         [vertices[0], vertices[1], vertices[3]],
-        (strategy(Rgba([0x00, 0x80, 0x00, 0x80]))).apply(),
+        apply(&strategy(Rgba([0x00, 0x80, 0x00, 0x80]))),
     ));
     for vertex in vertices {
-        painter.draw(pixel::Pixel::new(vertex, Rgba([0xff; 4]).overwrite()));
+        painter.draw(pixel::Pixel::new(vertex, overwrite(Rgba([0xff; 4]))));
     }
 
     let mut path = env::current_exe()?;

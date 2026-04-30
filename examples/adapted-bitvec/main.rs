@@ -2,7 +2,7 @@ use bitvec::bitarr;
 use ugly_graphics::image::bitvec_adapter::Adapter;
 use ugly_graphics::operation::scanline::triangle::outline::OutlineTriangle;
 use ugly_graphics::painter::Painter;
-use ugly_graphics::strategy::IntoOverwrite;
+use ugly_graphics::strategy::overwrite;
 
 const WIDTH: usize = 128;
 const HEIGHT: usize = 64;
@@ -14,7 +14,7 @@ fn main() {
 
     painter.draw(OutlineTriangle::new(
         [(1, 1), (127, 16), (63, 63)],
-        true.overwrite(),
+        overwrite(true),
     ));
 
     for line in data.chunks(128) {

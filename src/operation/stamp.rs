@@ -3,7 +3,7 @@
 use crate::image::Image;
 use crate::operation::Operation;
 use crate::painter::Painter;
-use crate::strategy::IntoApply;
+use crate::strategy::apply;
 
 /// Action that computes the resulting pixel value `P` given the original `P`
 /// and provided `S` values.
@@ -51,7 +51,7 @@ where
 
                     let strategy =
                         move |passed_pixel| (self.action)(passed_pixel, stamp_pixel.clone());
-                    painter.pixel((target_x, target_y), &strategy.apply());
+                    painter.pixel((target_x, target_y), &apply(&strategy));
                 }
             }
         }

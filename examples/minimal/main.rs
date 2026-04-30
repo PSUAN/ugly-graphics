@@ -6,7 +6,7 @@ use image::{ExtendedColorType, ImageBuffer, ImageEncoder, Rgb};
 use ugly_graphics::image::image_adapter::Adapter;
 use ugly_graphics::operation::scanline::triangle::filled::overlapping::OverlappingTriangle;
 use ugly_graphics::painter::Painter;
-use ugly_graphics::strategy::IntoOverwrite;
+use ugly_graphics::strategy::overwrite;
 
 fn main() -> io::Result<()> {
     let mut image = ImageBuffer::new(320, 320);
@@ -15,7 +15,7 @@ fn main() -> io::Result<()> {
 
     let triangle = OverlappingTriangle::new(
         [(10, 210), (160, 300), (310, 20)],
-        Rgb([0xff, 0x80, 0x00]).overwrite(),
+        overwrite(Rgb([0xff, 0x80, 0x00])),
     );
     painter.draw(triangle);
 

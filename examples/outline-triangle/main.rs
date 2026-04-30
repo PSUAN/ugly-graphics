@@ -7,7 +7,7 @@ use ugly_graphics::image::image_adapter::Adapter;
 use ugly_graphics::operation::pixel::Pixel;
 use ugly_graphics::operation::scanline::triangle::outline::OutlineTriangle;
 use ugly_graphics::painter::Painter;
-use ugly_graphics::strategy::{IntoApply, IntoOverwrite};
+use ugly_graphics::strategy::{apply, overwrite};
 
 fn main() -> io::Result<()> {
     let mut image = ImageBuffer::new(320, 320);
@@ -23,18 +23,17 @@ fn main() -> io::Result<()> {
     for triangle in triangles {
         painter.draw(OutlineTriangle::new(
             triangle,
-            (|mut v: Rgb<u8>| {
+            apply(&|mut v: Rgb<u8>| {
                 v.0[0] += 0x60;
                 v.0[1] += 0x30;
                 v
-            })
-            .apply(),
+            }),
         ));
     }
 
     for triangle in triangles {
         for pixel in triangle {
-            painter.draw(Pixel::new(pixel, Rgb([0xff, 0xff, 0xff]).overwrite()));
+            painter.draw(Pixel::new(pixel, overwrite(Rgb([0xff, 0xff, 0xff]))));
         }
     }
 

@@ -6,7 +6,7 @@ use ugly_graphics::operation::scanline::rectangle::filled::FilledRectangle;
 use ugly_graphics::operation::scanline::rectangle::outline::OutlineRectangle;
 use ugly_graphics::operation::stamp::Stamp;
 use ugly_graphics::painter::Painter;
-use ugly_graphics::strategy::{IntoApply as _, IntoOverwrite as _, Strategy};
+use ugly_graphics::strategy::{Strategy, apply, overwrite};
 use ugly_graphics::view::cropped::Cropped;
 use ugly_graphics::view::flipped::Flipped;
 use ugly_graphics::view::rotated::Rotated;
@@ -18,8 +18,8 @@ fn pixels_are_manipulated() {
     let mut flipped = Flipped::horizontal(&mut sprite);
     let mut painter = Painter::new(&mut flipped);
 
-    painter.draw(Pixel::new((1, 2), 0x80.overwrite()));
-    painter.draw(Pixel::new((2, 3), (|v| v * 2).apply()));
+    painter.draw(Pixel::new((1, 2), overwrite(0x80)));
+    painter.draw(Pixel::new((2, 3), apply(&|v| v * 2)));
 
     let expected = Sprite::from_raw([
         [0x08, 0x08, 0x08, 0x08],
@@ -64,10 +64,10 @@ fn line_is_applied() {
     let mut sprite = Sprite::<u8, 8, 8>::from_copies(0x00);
     let mut painter = Painter::new(&mut sprite);
 
-    painter.draw(Line::new((-1, -1), (8, 8), (|v| v + 0x02).apply()));
-    painter.draw(Line::new((8, -1), (-1, 8), 0xff.overwrite()));
-    painter.draw(Line::new((2, 1), (5, 1), 0x80.overwrite()));
-    painter.draw(Line::new((1, 2), (1, 5), 0x80.overwrite()));
+    painter.draw(Line::new((-1, -1), (8, 8), apply(&|v| v + 0x02)));
+    painter.draw(Line::new((8, -1), (-1, 8), overwrite(0xff)));
+    painter.draw(Line::new((2, 1), (5, 1), overwrite(0x80)));
+    painter.draw(Line::new((1, 2), (1, 5), overwrite(0x80)));
 
     let expected = Sprite::from_raw([
         [0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff],

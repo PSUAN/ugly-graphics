@@ -8,7 +8,7 @@ use ugly_graphics::operation::pixel::Pixel;
 use ugly_graphics::operation::scanline::triangle::filled::overlapping::OverlappingTriangle;
 use ugly_graphics::operation::scanline::triangle::outline::OutlineTriangle;
 use ugly_graphics::painter::Painter;
-use ugly_graphics::strategy::IntoApply;
+use ugly_graphics::strategy::apply;
 
 fn main() -> io::Result<()> {
     let mut image = ImageBuffer::new(320, 320);
@@ -18,29 +18,26 @@ fn main() -> io::Result<()> {
     let triangle = [(10, 210), (160, 300), (310, 20)];
     painter.draw(OverlappingTriangle::new(
         triangle,
-        (|mut v: Rgb<u8>| {
+        apply(&|mut v: Rgb<u8>| {
             v.0[0] += 0x70;
             v
-        })
-        .apply(),
+        }),
     ));
     painter.draw(OutlineTriangle::new(
         triangle,
-        (|mut v: Rgb<u8>| {
+        apply(&|mut v: Rgb<u8>| {
             v.0[1] += 0x70;
             v
-        })
-        .apply(),
+        }),
     ));
 
     for pixel in triangle {
         painter.draw(Pixel::new(
             pixel,
-            (|mut v: Rgb<u8>| {
+            apply(&|mut v: Rgb<u8>| {
                 v.0[2] += 0x70;
                 v
-            })
-            .apply(),
+            }),
         ));
     }
 
