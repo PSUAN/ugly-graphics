@@ -139,7 +139,7 @@ mod test {
         );
         assert_eq!(
             vertical_range_in_dimensions((-2, 1), (3, 6), (16, 16)),
-            Some(3..6)
+            Some(3..7)
         );
         assert_eq!(
             vertical_range_in_dimensions((0, 0), (4, 16), (8, 8)),

@@ -1,6 +1,5 @@
 use bitvec::bitarr;
 use ugly_graphics::image::bitvec_adapter::Adapter;
-use ugly_graphics::operation::scanline::line::Line;
 use ugly_graphics::operation::scanline::triangle::outline::OutlineTriangle;
 use ugly_graphics::painter::Painter;
 use ugly_graphics::strategy::overwrite;

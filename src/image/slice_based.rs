@@ -50,6 +50,22 @@ impl<T> SliceBased<T> {
     pub fn to_owned(self) -> T {
         self.data
     }
+
+    /// Get internal `data` as a reference.
+    pub fn data<P>(&self) -> &[P]
+    where
+        T: ops::Deref<Target = [P]>,
+    {
+        self.data.deref()
+    }
+
+    /// Get internal `data` as a mutable reference.
+    pub fn data_mut<P>(&mut self) -> &mut [P]
+    where
+        T: ops::DerefMut<Target = [P]>,
+    {
+        self.data.deref_mut()
+    }
 }
 
 impl<T> Dimensions for SliceBased<T> {
@@ -138,5 +154,21 @@ where
         self.data
             .iter_mut()
             .for_each(|pixel| *pixel = function(pixel.clone()));
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn raw_access() {
+        let mut data = [0x00u8; 256];
+        let data = &mut data as &mut [u8];
+        let mut slice_based = super::SliceBased::new(data, 16).unwrap();
+
+        slice_based.set(0x80);
+
+        assert!(slice_based.data().iter().all(|v| *v == 0x80));
     }
 }

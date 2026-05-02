@@ -40,6 +40,16 @@ impl<P, const W: usize, const H: usize> Sprite<P, W, H> {
     pub fn into_owned(self) -> [[P; W]; H] {
         self.data
     }
+
+    /// Get stored `data` as a reference.
+    pub fn data(&self) -> &[[P; W]; H] {
+        &self.data
+    }
+
+    /// Get stored `data` as a mutable reference.
+    pub fn data_mut(&mut self) -> &mut [[P; W]; H] {
+        &mut self.data
+    }
 }
 
 impl<P, const W: usize, const H: usize> Dimensions for Sprite<P, W, H> {
