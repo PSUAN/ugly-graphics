@@ -11,19 +11,25 @@ use crate::strategy::Strategy;
 /// An [`ImageMut`] wrapper.
 pub struct Painter<'a, P> {
     target: &'a mut dyn ImageMut<Pixel = P>,
+    offset: (i32, i32),
 }
 
 impl<'a, P> Painter<'a, P> {
     /// Create new [`Painter`] instance.
     pub fn new(target: &'a mut dyn ImageMut<Pixel = P>) -> Self {
-        Self { target }
+        let offset = (0, 0);
+        Self { target, offset }
     }
-}
 
-impl<'a, P> Painter<'a, P> {
-    /// Get dimensions of the internal [`ImageMut`].
-    pub fn dimensions(&self) -> (u32, u32) {
-        self.target.dimensions()
+    /// Build new [`Painter`] with provided `offset` value.
+    pub fn with_offset(self, offset: (i32, i32)) -> Self {
+        Self { offset, ..self }
+    }
+
+    /// Get draw zone origin and dimensions.
+    pub fn draw_zone(&self) -> ((i32, i32), (u32, u32)) {
+        let (offset_x, offset_y) = self.offset;
+        ((-offset_x, -offset_y), self.target.dimensions())
     }
 }
 
@@ -43,6 +49,9 @@ where
     ///
     /// Fails silently.
     pub fn pixel(&mut self, (x, y): (i32, i32), strategy: &Strategy<P>) {
+        let (offset_x, offset_y) = self.offset;
+        let (x, y) = (x + offset_x, y + offset_y);
+
         if let Ok(x) = x.try_into()
             && let Ok(y) = y.try_into()
         {
@@ -58,6 +67,9 @@ where
     ///
     /// Fails silently.
     pub fn horizontal_line(&mut self, x: Range<i32>, y: i32, strategy: &Strategy<P>) {
+        let (offset_x, offset_y) = self.offset;
+        let (x, y) = ((x.start + offset_x)..(x.end + offset_x), y + offset_y);
+
         if let Ok(y) = y.try_into() {
             if x.end < 0 {
                 return;

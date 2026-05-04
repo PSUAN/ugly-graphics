@@ -27,10 +27,10 @@ where
     type Output = ();
 
     fn draw_on(self, painter: &mut Painter<'_, P>) -> Self::Output {
-        let (_, height) = painter.dimensions();
+        let ((_, origin_y), (_, height)) = painter.draw_zone();
 
         let (_, bounding_y) = scanline::estimate_bounding_box(&self.vertices).unwrap_or_default();
-        let bounding_y = scanline::clamp_range(bounding_y, 0, height as i32);
+        let bounding_y = scanline::clamp_range(bounding_y, origin_y, height as i32);
 
         // Sort vertices by the y value.
         let [vertex_a, vertex_b, vertex_c] = self.vertices;
