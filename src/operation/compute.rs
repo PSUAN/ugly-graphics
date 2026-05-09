@@ -1,7 +1,7 @@
 //! [`Compute`] operation applied to the entire painter.
 
 use crate::operation::Operation;
-use crate::painter::Painter;
+use crate::painter::DrawRegion;
 use crate::strategy::apply;
 
 /// An operation to be applied to every pixel of a painter.
@@ -23,7 +23,7 @@ where
 {
     type Output = ();
 
-    fn draw_on(self, painter: &mut Painter<'_, P>) -> Self::Output {
+    fn draw_on(self, painter: &mut DrawRegion<'_, '_, P>) -> Self::Output {
         let ((start_x, start_y), (width, height)) = painter.draw_zone();
         for y in start_x..height as i32 {
             for x in start_y..width as i32 {

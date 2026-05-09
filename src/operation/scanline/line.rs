@@ -3,7 +3,7 @@
 use core::ops::Range;
 
 use crate::operation::Operation;
-use crate::painter::Painter;
+use crate::painter::DrawRegion;
 use crate::strategy::Strategy;
 use crate::utility;
 
@@ -116,7 +116,7 @@ where
 {
     type Output = ();
 
-    fn draw_on(self, painter: &mut Painter<'_, P>) -> Self::Output {
+    fn draw_on(self, painter: &mut DrawRegion<'_, '_, P>) -> Self::Output {
         let zone = painter.draw_zone();
         if let Some(scan) = vertical_range_in_dimensions(self.from, self.to, zone) {
             for scanline in scan {

@@ -14,10 +14,10 @@ There are several abstractions:
 
 ## Usage
 
-1. Obtain an image (`1` and `2`);
+1. Obtain an `ImageMut` instance (`1` and `2`);
 2. Create a painter (`3`);
 3. Construct a primitive (`4`);
-4. Draw it (`5`);
+4. Draw the primitive (`5`);
 
 ```rust
 fn main() -> io::Result<()> {

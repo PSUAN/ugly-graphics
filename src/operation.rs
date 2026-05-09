@@ -1,6 +1,6 @@
 //! [`Operation`] is an action applied to a [`Painter`].
 
-use crate::painter::Painter;
+use crate::painter::DrawRegion;
 
 pub mod compute;
 pub mod pixel;
@@ -15,5 +15,5 @@ pub trait Operation<P> {
     type Output;
 
     /// Draw `self` on a provided [`Painter`].
-    fn draw_on(self, painter: &mut Painter<'_, P>) -> Self::Output;
+    fn draw_on(self, painter: &mut DrawRegion<'_, '_, P>) -> Self::Output;
 }

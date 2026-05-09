@@ -1,6 +1,6 @@
 //! [`Pixel`] applies a [`Strategy`] to one pixel at the given position.
 
-use crate::painter::Painter;
+use crate::painter::DrawRegion;
 use crate::strategy::Strategy;
 
 use super::Operation;
@@ -25,7 +25,7 @@ where
 {
     type Output = ();
 
-    fn draw_on(self, painter: &mut Painter<'_, P>) -> Self::Output {
+    fn draw_on(self, painter: &mut DrawRegion<'_, '_, P>) -> Self::Output {
         painter.pixel(self.position, &self.value);
     }
 }

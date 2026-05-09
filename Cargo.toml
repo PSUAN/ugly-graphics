@@ -1,6 +1,6 @@
 [package]
 name = "ugly-graphics"
-version = "0.1.4"
+version = "0.1.5"
 edition = "2024"
 authors = ["PSUAN collective", "Hara Red <rtc6fg4.fejg2@gmail.com>"]
 description = "Ugly graphics on CPU"
@@ -46,4 +46,8 @@ required-features = ["image-adapter"]
 
 [[example]]
 name = "lines"
+required-features = ["image-adapter"]
+
+[[example]]
+name = "usage"
 required-features = ["image-adapter"]

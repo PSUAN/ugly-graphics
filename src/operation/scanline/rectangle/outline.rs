@@ -1,7 +1,7 @@
 //! Outline rectangle primitive.
 
 use crate::operation::Operation;
-use crate::painter::Painter;
+use crate::painter::DrawRegion;
 use crate::strategy::Strategy;
 use crate::utility;
 
@@ -30,7 +30,7 @@ where
 {
     type Output = ();
 
-    fn draw_on(self, painter: &mut Painter<'_, P>) -> Self::Output {
+    fn draw_on(self, painter: &mut DrawRegion<'_, '_, P>) -> Self::Output {
         let (from, to) = {
             let x = utility::swap_if(self.from.0 > self.to.0, (self.from.0, self.to.0));
             let y = utility::swap_if(self.from.1 > self.to.1, (self.from.1, self.to.1));

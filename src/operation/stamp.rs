@@ -2,7 +2,7 @@
 
 use crate::image::Image;
 use crate::operation::Operation;
-use crate::painter::Painter;
+use crate::painter::DrawRegion;
 use crate::strategy::apply;
 
 /// Action that computes the resulting pixel value `P` given the original `P`
@@ -39,7 +39,7 @@ where
 {
     type Output = ();
 
-    fn draw_on(self, painter: &mut Painter<'_, P>) -> Self::Output {
+    fn draw_on(self, painter: &mut DrawRegion<'_, '_, P>) -> Self::Output {
         let (x, y) = self.position;
         let (width, height) = self.stamp.dimensions();
 

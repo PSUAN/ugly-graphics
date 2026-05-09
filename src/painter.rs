@@ -25,12 +25,6 @@ impl<'a, P> Painter<'a, P> {
     pub fn with_offset(self, offset: (i32, i32)) -> Self {
         Self { offset, ..self }
     }
-
-    /// Get draw zone origin and dimensions.
-    pub fn draw_zone(&self) -> ((i32, i32), (u32, u32)) {
-        let (offset_x, offset_y) = self.offset;
-        ((-offset_x, -offset_y), self.target.dimensions())
-    }
 }
 
 impl<'a, P> Painter<'a, P>
@@ -42,22 +36,39 @@ where
     where
         O: Operation<P>,
     {
-        operation.draw_on(self)
+        let mut region = DrawRegion { painter: self };
+        operation.draw_on(&mut region)
+    }
+}
+
+/// A region to perform drawing operations on.
+pub struct DrawRegion<'p, 't, P> {
+    painter: &'p mut Painter<'t, P>,
+}
+
+impl<'p, 't, P> DrawRegion<'p, 't, P> {
+    /// Get draw zone origin and dimensions.
+    pub fn draw_zone(&self) -> ((i32, i32), (u32, u32)) {
+        let (offset_x, offset_y) = self.painter.offset;
+        ((-offset_x, -offset_y), self.painter.target.dimensions())
     }
 
     /// Apply the provided `strategy` on the `(x, y)` positions.
     ///
     /// Fails silently.
-    pub fn pixel(&mut self, (x, y): (i32, i32), strategy: &Strategy<P>) {
-        let (offset_x, offset_y) = self.offset;
+    pub fn pixel(&mut self, (x, y): (i32, i32), strategy: &Strategy<P>)
+    where
+        P: Clone,
+    {
+        let (offset_x, offset_y) = self.painter.offset;
         let (x, y) = (x + offset_x, y + offset_y);
 
         if let Ok(x) = x.try_into()
             && let Ok(y) = y.try_into()
         {
             match strategy {
-                Strategy::Overwrite(value) => self.target.set_pixel((x, y), value.clone()),
-                Strategy::Apply(function) => self.target.modify_pixel((x, y), function),
+                Strategy::Overwrite(value) => self.painter.target.set_pixel((x, y), value.clone()),
+                Strategy::Apply(function) => self.painter.target.modify_pixel((x, y), function),
             }
         }
     }
@@ -66,8 +77,11 @@ where
     /// `y`.
     ///
     /// Fails silently.
-    pub fn horizontal_line(&mut self, x: Range<i32>, y: i32, strategy: &Strategy<P>) {
-        let (offset_x, offset_y) = self.offset;
+    pub fn horizontal_line(&mut self, x: Range<i32>, y: i32, strategy: &Strategy<P>)
+    where
+        P: Clone,
+    {
+        let (offset_x, offset_y) = self.painter.offset;
         let (x, y) = ((x.start + offset_x)..(x.end + offset_x), y + offset_y);
 
         if let Ok(y) = y.try_into() {
@@ -80,11 +94,14 @@ where
 
             match strategy {
                 Strategy::Overwrite(value) => {
-                    self.target
+                    self.painter
+                        .target
                         .set_horizontal_line((x, y), total, value.clone())
                 }
                 Strategy::Apply(function) => {
-                    self.target.modify_horizontal_line((x, y), total, function)
+                    self.painter
+                        .target
+                        .modify_horizontal_line((x, y), total, function)
                 }
             }
         }

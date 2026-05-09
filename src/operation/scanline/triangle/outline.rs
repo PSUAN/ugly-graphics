@@ -3,7 +3,7 @@
 use core::ops::Range;
 
 use crate::operation::{Operation, scanline};
-use crate::painter::Painter;
+use crate::painter::DrawRegion;
 use crate::strategy::Strategy;
 use crate::utility;
 
@@ -39,7 +39,7 @@ where
 {
     type Output = ();
 
-    fn draw_on(self, painter: &mut Painter<'_, P>) -> Self::Output {
+    fn draw_on(self, painter: &mut DrawRegion<'_, '_, P>) -> Self::Output {
         let ((_, origin_y), (_, height)) = painter.draw_zone();
 
         let (_, bounding_y) = scanline::estimate_bounding_box(&self.vertices).unwrap_or_default();
