@@ -77,6 +77,9 @@
 #![no_std]
 #![deny(missing_docs)]
 
+#[cfg(test)]
+extern crate std;
+
 pub mod image;
 pub mod operation;
 pub mod painter;
