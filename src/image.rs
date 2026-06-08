@@ -19,7 +19,7 @@ pub trait Dimensions {
 
 impl<T> Dimensions for &T
 where
-    T: Dimensions,
+    T: Dimensions + ?Sized,
 {
     fn dimensions(&self) -> (u32, u32) {
         Dimensions::dimensions(*self)
@@ -28,7 +28,7 @@ where
 
 impl<T> Dimensions for &mut T
 where
-    T: Dimensions,
+    T: Dimensions + ?Sized,
 {
     fn dimensions(&self) -> (u32, u32) {
         Dimensions::dimensions(*self)
@@ -49,7 +49,7 @@ pub trait Image: Dimensions {
 
 impl<T> Image for &T
 where
-    T: Image,
+    T: Image + ?Sized,
 {
     type Pixel = T::Pixel;
 
@@ -60,7 +60,7 @@ where
 
 impl<T> Image for &mut T
 where
-    T: Image,
+    T: Image + ?Sized,
 {
     type Pixel = T::Pixel;
 
@@ -108,7 +108,7 @@ pub trait ImageMut: Dimensions {
 
 impl<T> ImageMut for &mut T
 where
-    T: ImageMut,
+    T: ImageMut + ?Sized,
 {
     type Pixel = T::Pixel;
 
