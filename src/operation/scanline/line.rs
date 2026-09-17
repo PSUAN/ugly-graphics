@@ -2,22 +2,22 @@
 
 use core::ops::Range;
 
+use crate::image::{Dimensions, ImageMut};
 use crate::operation::Operation;
 use crate::painter::DrawRegion;
-use crate::strategy::Strategy;
 use crate::utility;
 
 /// Line primitive.
 #[derive(Clone, Copy)]
-pub struct Line<'a, P> {
+pub struct Line<P> {
     from: (i32, i32),
     to: (i32, i32),
-    value: Strategy<'a, P>,
+    value: P,
 }
 
-impl<'a, P> Line<'a, P> {
+impl<P> Line<P> {
     /// Create a new straight line from given positions and provided `value`.
-    pub fn new(from: (i32, i32), to: (i32, i32), value: Strategy<'a, P>) -> Self {
+    pub fn new(from: (i32, i32), to: (i32, i32), value: P) -> Self {
         Self { from, to, value }
     }
 }
@@ -110,13 +110,13 @@ fn vertical_range_in_dimensions(
     ))
 }
 
-impl<'a, P> Operation<P> for Line<'a, P>
+impl<T, P> Operation<T> for Line<P>
 where
-    P: Clone,
+    T: ImageMut<P> + Dimensions,
 {
     type Output = ();
 
-    fn draw_on(self, painter: &mut DrawRegion<'_, '_, P>) -> Self::Output {
+    fn draw_on(self, painter: &mut DrawRegion<'_, T>) -> Self::Output {
         let zone = painter.draw_zone();
         if let Some(scan) = vertical_range_in_dimensions(self.from, self.to, zone) {
             for scanline in scan {

@@ -2,7 +2,6 @@
 //! [`ImageMut`] by a positive amount, effectively reducing its size.
 
 use crate::image::{Dimensions, Image, ImageMut};
-use crate::strategy::Modify;
 
 /// The view to shift the coordinates.
 pub struct Shifted<T> {
@@ -47,58 +46,28 @@ where
     }
 }
 
-impl<T> ImageMut for Shifted<T>
+impl<T, W> ImageMut<W> for Shifted<T>
 where
-    T: ImageMut,
-    T::Pixel: Clone,
+    T: ImageMut<W> + Dimensions,
 {
-    type Pixel = T::Pixel;
-
-    fn set_pixel(&mut self, position: (u32, u32), value: Self::Pixel) {
+    fn write_pixel(&mut self, position: (u32, u32), writer: &W) {
         let position = shift(self.shift, position);
-        self.target.set_pixel(position, value);
+        self.target.write_pixel(position, writer);
     }
 
-    fn modify_pixel(&mut self, position: (u32, u32), function: Modify<Self::Pixel>) {
+    fn write_horizontal_line(&mut self, position: (u32, u32), total: u32, writer: &W) {
         let position = shift(self.shift, position);
-        self.target.modify_pixel(position, function);
+        self.target.write_horizontal_line(position, total, writer);
     }
 
-    fn set_horizontal_line(&mut self, position: (u32, u32), total: u32, value: Self::Pixel) {
-        let position = shift(self.shift, position);
-        self.target.set_horizontal_line(position, total, value);
-    }
-
-    fn modify_horizontal_line(
-        &mut self,
-        position: (u32, u32),
-        total: u32,
-        function: Modify<Self::Pixel>,
-    ) {
-        let position = shift(self.shift, position);
-        self.target
-            .modify_horizontal_line(position, total, function);
-    }
-
-    fn set(&mut self, value: Self::Pixel) {
+    fn write(&mut self, writer: &W) {
         let (width, height) = self.target.dimensions();
         let (shift_x, shift_y) = self.shift;
         let total = width - shift_x;
 
         for y in shift_y..height {
             self.target
-                .set_horizontal_line((shift_x, y), total, value.clone());
-        }
-    }
-
-    fn modify(&mut self, function: Modify<Self::Pixel>) {
-        let (width, height) = self.target.dimensions();
-        let (shift_x, shift_y) = self.shift;
-        let total = width - shift_x;
-
-        for y in shift_y..height {
-            self.target
-                .modify_horizontal_line((shift_x, y), total, function);
+                .write_horizontal_line((shift_x, y), total, writer);
         }
     }
 }
@@ -106,6 +75,7 @@ where
 #[cfg(test)]
 mod test {
     use crate::image::sprite::Sprite;
+    use crate::strategy;
 
     use super::*;
 
@@ -114,8 +84,8 @@ mod test {
         let mut sprite = Sprite::<u8, 4, 4>::from_copies(0x01);
         let mut shifted = Shifted::new(&mut sprite, (1, 2));
         let function = &|v| v + 1;
-        shifted.modify_pixel((2, 0), function);
-        shifted.modify_pixel((0, 1), function);
+        shifted.write_pixel((2, 0), &strategy::apply(function));
+        shifted.write_pixel((0, 1), &strategy::apply(function));
 
         let expected = Sprite::from_raw([
             [0x01; 4],
@@ -131,7 +101,7 @@ mod test {
         let mut sprite = Sprite::<u8, 5, 6>::from_copies(0x01);
         let mut shifted = Shifted::new(&mut sprite, (2, 3));
 
-        shifted.modify(&|v| v + 1);
+        shifted.write(&strategy::apply(&|v| v + 1));
 
         let expected = Sprite::from_raw([
             [0x01; 5],

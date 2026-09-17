@@ -2,9 +2,9 @@
 
 use core::ops::Range;
 
+use crate::image::{Dimensions, ImageMut};
 use crate::operation::{Operation, scanline};
 use crate::painter::DrawRegion;
-use crate::strategy::Strategy;
 use crate::utility;
 
 fn range_overlap_solver(first: Range<i32>, second: Range<i32>) -> [Range<i32>; 2] {
@@ -21,25 +21,25 @@ fn range_overlap_solver(first: Range<i32>, second: Range<i32>) -> [Range<i32>; 2
 ///
 /// Intended to not draw the same pixel more than once.
 #[derive(Clone, Copy)]
-pub struct OutlineTriangle<'a, P> {
+pub struct OutlineTriangle<P> {
     vertices: [(i32, i32); 3],
-    value: Strategy<'a, P>,
+    value: P,
 }
 
-impl<'a, P> OutlineTriangle<'a, P> {
+impl<P> OutlineTriangle<P> {
     /// Create a new instance to draw using the provided `value`.
-    pub fn new(vertices: [(i32, i32); 3], value: Strategy<'a, P>) -> Self {
+    pub fn new(vertices: [(i32, i32); 3], value: P) -> Self {
         Self { vertices, value }
     }
 }
 
-impl<P> Operation<P> for OutlineTriangle<'_, P>
+impl<T, P> Operation<T> for OutlineTriangle<P>
 where
-    P: Clone,
+    T: ImageMut<P> + Dimensions,
 {
     type Output = ();
 
-    fn draw_on(self, painter: &mut DrawRegion<'_, '_, P>) -> Self::Output {
+    fn draw_on(self, painter: &mut DrawRegion<'_, T>) -> Self::Output {
         let ((_, origin_y), (_, height)) = painter.draw_zone();
 
         let (_, bounding_y) = scanline::estimate_bounding_box(&self.vertices).unwrap_or_default();

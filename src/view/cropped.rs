@@ -2,7 +2,6 @@
 //! target stored in it.
 
 use crate::image::{Dimensions, Image, ImageMut};
-use crate::strategy::Modify;
 
 /// The view to reduce dimensions.
 ///
@@ -58,26 +57,17 @@ where
     }
 }
 
-impl<T> ImageMut for Cropped<T>
+impl<T, W> ImageMut<W> for Cropped<T>
 where
-    T: ImageMut,
-    T::Pixel: Clone,
+    T: ImageMut<W>,
 {
-    type Pixel = T::Pixel;
-
-    fn set_pixel(&mut self, position: (u32, u32), value: Self::Pixel) {
+    fn write_pixel(&mut self, position: (u32, u32), writer: &W) {
         if let Some(position) = crop_position(self.dimensions, position) {
-            self.target.set_pixel(position, value);
+            self.target.write_pixel(position, writer);
         }
     }
 
-    fn modify_pixel(&mut self, position: (u32, u32), function: Modify<Self::Pixel>) {
-        if let Some(position) = crop_position(self.dimensions, position) {
-            self.target.modify_pixel(position, function);
-        }
-    }
-
-    fn set_horizontal_line(&mut self, position: (u32, u32), plus: u32, value: Self::Pixel) {
+    fn write_horizontal_line(&mut self, position: (u32, u32), plus: u32, writer: &W) {
         let cropped_width = self.dimensions.0;
 
         if let Some((x, y)) = crop_position(self.dimensions, position) {
@@ -86,43 +76,16 @@ where
             } else {
                 (x, plus)
             };
-            self.target.set_horizontal_line((x, y), plus, value);
+            self.target.write_horizontal_line((x, y), plus, writer);
         }
     }
 
-    fn modify_horizontal_line(
-        &mut self,
-        position: (u32, u32),
-        plus: u32,
-        function: Modify<Self::Pixel>,
-    ) {
-        let cropped_width = self.dimensions.0;
-
-        if let Some((x, y)) = crop_position(self.dimensions, position) {
-            let (x, plus) = if x + plus >= cropped_width {
-                (x, cropped_width - x)
-            } else {
-                (x, plus)
-            };
-            self.target.modify_horizontal_line((x, y), plus, function);
-        }
-    }
-
-    fn set(&mut self, value: Self::Pixel) {
+    fn write(&mut self, writer: &W) {
         let (cropped_width, cropped_height) = self.dimensions;
 
         for y in 0..cropped_height {
             self.target
-                .set_horizontal_line((0, y), cropped_width, value.clone());
-        }
-    }
-
-    fn modify(&mut self, function: Modify<Self::Pixel>) {
-        let (cropped_width, cropped_height) = self.dimensions;
-
-        for y in 0..cropped_height {
-            self.target
-                .modify_horizontal_line((0, y), cropped_width, function);
+                .write_horizontal_line((0, y), cropped_width, writer);
         }
     }
 }
@@ -130,6 +93,7 @@ where
 #[cfg(test)]
 mod test {
     use crate::image::sprite::Sprite;
+    use crate::strategy;
 
     use super::*;
 
@@ -137,15 +101,15 @@ mod test {
     fn cropped_works() {
         let mut sprite = Sprite::<u8, 5, 4>::from_copies(0x01);
         let mut cropped = Cropped::new(&mut sprite, (4, 4));
-        cropped.modify(&|v| v + 0x01);
+        cropped.write(&strategy::apply(&|v| v + 0x01));
 
         assert!(cropped.pixel((3, 3)).is_some());
         assert!(cropped.pixel((4, 4)).is_none());
 
-        cropped.set_pixel((3, 3), 0xff);
-        cropped.set_pixel((4, 4), 0xff);
-        cropped.set_horizontal_line((1, 1), 8, 0x80);
-        cropped.set_horizontal_line((0, 0), 2, 0x40);
+        cropped.write_pixel((3, 3), &strategy::overwrite(0xff));
+        cropped.write_pixel((4, 4), &strategy::overwrite(0xff));
+        cropped.write_horizontal_line((1, 1), 8, &strategy::overwrite(0x80));
+        cropped.write_horizontal_line((0, 0), 2, &strategy::overwrite(0x40));
 
         let expected = Sprite::from_raw([
             [0x40, 0x40, 0x02, 0x02, 0x01],
@@ -160,7 +124,7 @@ mod test {
     fn wide_set_in_cropped_works() {
         let mut sprite = Sprite::<u8, 5, 4>::from_copies(0x00);
         let mut cropped = Cropped::new(&mut sprite, (4, 4));
-        cropped.set_horizontal_line((0, 1), 16, 0x40);
+        cropped.write_horizontal_line((0, 1), 16, &strategy::overwrite(0x40));
 
         let expected = Sprite::from_raw([
             [0x00; 5],

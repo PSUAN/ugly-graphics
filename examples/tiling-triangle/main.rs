@@ -20,7 +20,7 @@ fn strategy(addition: Rgba<u8>) -> impl Fn(Rgba<u8>) -> Rgba<u8> {
 fn main() -> io::Result<()> {
     let mut image = ImageBuffer::new(320, 320);
     let mut adapter = Adapter::new(&mut image);
-    adapter.set(Rgba([0x00, 0x00, 0x00, 0xff]));
+    adapter.write(&overwrite(Rgba([0x00, 0x00, 0x00, 0xff])));
 
     let mut painter = Painter::new(&mut adapter);
 

@@ -1,9 +1,9 @@
 //! The [`Stamp`] applies an [`Image`] using provided [`Action`].
 
-use crate::image::Image;
+use crate::image::{Dimensions, Image, ImageMut};
 use crate::operation::Operation;
 use crate::painter::DrawRegion;
-use crate::strategy::apply;
+use crate::strategy::{self, Apply};
 
 /// Action that computes the resulting pixel value `P` given the original `P`
 /// and provided source `S` values.
@@ -32,14 +32,14 @@ impl<'a, P, S> Stamp<'a, P, S> {
     }
 }
 
-impl<'a, P, S> Operation<P> for Stamp<'a, P, S>
+impl<'a, T, P, S> Operation<T> for Stamp<'a, P, S>
 where
-    P: Clone,
+    T: for<'b> ImageMut<Apply<'b, P>> + Dimensions,
     S: Clone,
 {
     type Output = ();
 
-    fn draw_on(self, painter: &mut DrawRegion<'_, '_, P>) -> Self::Output {
+    fn draw_on(self, painter: &mut DrawRegion<'_, T>) -> Self::Output {
         let ((draw_x, draw_y), (draw_width, draw_height)) = painter.draw_zone();
 
         let (x, y) = self.position;
@@ -63,9 +63,9 @@ where
                 if let Some(stamp_pixel) = self.stamp.pixel((stamp_x, stamp_y)) {
                     let target_x = x + stamp_x as i32;
 
-                    let strategy =
+                    let write =
                         move |passed_pixel| (self.action)(passed_pixel, stamp_pixel.clone());
-                    painter.pixel((target_x, target_y), &apply(&strategy));
+                    painter.pixel((target_x, target_y), &strategy::apply(&write));
                 }
             }
         }

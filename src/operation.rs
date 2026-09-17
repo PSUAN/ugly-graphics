@@ -10,10 +10,10 @@ pub mod stamp;
 /// An operation applied to a [`Painter`].
 ///
 /// May return additional data upon completion.
-pub trait Operation<P> {
+pub trait Operation<T> {
     /// The additional data to be returned.
     type Output;
 
     /// Draw `self` on a provided [`Painter`].
-    fn draw_on(self, painter: &mut DrawRegion<'_, '_, P>) -> Self::Output;
+    fn draw_on(self, painter: &mut DrawRegion<'_, T>) -> Self::Output;
 }

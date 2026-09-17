@@ -1,36 +1,36 @@
 //! Outline rectangle primitive.
 
+use crate::image::{Dimensions, ImageMut};
 use crate::operation::Operation;
 use crate::painter::DrawRegion;
-use crate::strategy::Strategy;
 use crate::utility;
 
 /// A filled rectangle drawing operation.
 ///
 /// Draws at least one pixel, supports any order of corners.
 /// Does not draw the same pixel more than once.
-pub struct OutlineRectangle<'a, P> {
+pub struct OutlineRectangle<P> {
     from: (i32, i32),
     to: (i32, i32),
-    value: Strategy<'a, P>,
+    value: P,
 }
 
-impl<'a, P> OutlineRectangle<'a, P> {
+impl<P> OutlineRectangle<P> {
     /// Create a new instance to draw using the provided `value`.
     ///
     /// The `from` and `to` coordinates are included.
-    pub fn new(from: (i32, i32), to: (i32, i32), value: Strategy<'a, P>) -> Self {
+    pub fn new(from: (i32, i32), to: (i32, i32), value: P) -> Self {
         Self { from, to, value }
     }
 }
 
-impl<P> Operation<P> for OutlineRectangle<'_, P>
+impl<T, P> Operation<T> for OutlineRectangle<P>
 where
-    P: Clone,
+    T: ImageMut<P> + Dimensions,
 {
     type Output = ();
 
-    fn draw_on(self, painter: &mut DrawRegion<'_, '_, P>) -> Self::Output {
+    fn draw_on(self, painter: &mut DrawRegion<'_, T>) -> Self::Output {
         let (from, to) = {
             let x = utility::swap_if(self.from.0 > self.to.0, (self.from.0, self.to.0));
             let y = utility::swap_if(self.from.1 > self.to.1, (self.from.1, self.to.1));

@@ -5,10 +5,11 @@
 //! ```rust
 //! # use ugly_graphics::image::slice_based::SliceBased;
 //! # use ugly_graphics::image::{Image as _, ImageMut as _};
+//! # use ugly_graphics::strategy;
 //! fn main() {
 //!     let data = vec![0; 32 * 16];
 //!     let mut slice_based = SliceBased::new(data, 32).unwrap();
-//!     slice_based.set_pixel((1, 1), 4);
+//!     slice_based.write_pixel((1, 1), &strategy::overwrite(4));
 //!     assert_eq!(slice_based.pixel((1, 1)), Some(4));
 //! }
 //! ```
@@ -16,7 +17,7 @@
 use core::ops;
 
 use crate::image::{Dimensions, Image, ImageMut};
-use crate::strategy::Modify;
+use crate::strategy::{Apply, Overwrite};
 
 /// Slice-based storage for pixels.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -90,34 +91,27 @@ where
     }
 }
 
-impl<T, P> ImageMut for SliceBased<T>
+impl<T, P> ImageMut<Overwrite<P>> for SliceBased<T>
 where
     T: ops::DerefMut<Target = [P]>,
     P: Clone,
 {
-    type Pixel = P;
-
-    fn set_pixel(&mut self, (x, y): (u32, u32), value: Self::Pixel) {
+    fn write_pixel(&mut self, (x, y): (u32, u32), Overwrite(value): &Overwrite<P>) {
         if x >= self.width || y >= self.height {
             return;
         }
         let index = (x + y * self.width) as usize;
         if let Some(pixel) = self.data.get_mut(index) {
-            *pixel = value;
+            *pixel = value.clone();
         }
     }
 
-    fn modify_pixel(&mut self, (x, y): (u32, u32), function: Modify<Self::Pixel>) {
-        if x >= self.width || y >= self.height {
-            return;
-        }
-        let index = (x + y * self.width) as usize;
-        if let Some(pixel) = self.data.get_mut(index) {
-            *pixel = function(pixel.clone());
-        }
-    }
-
-    fn set_horizontal_line(&mut self, (x, y): (u32, u32), total: u32, value: Self::Pixel) {
+    fn write_horizontal_line(
+        &mut self,
+        (x, y): (u32, u32),
+        total: u32,
+        Overwrite(value): &Overwrite<P>,
+    ) {
         if x >= self.width || y >= self.height {
             return;
         }
@@ -128,37 +122,46 @@ where
         }
     }
 
-    fn modify_horizontal_line(
-        &mut self,
-        (x, y): (u32, u32),
-        total: u32,
-        function: Modify<Self::Pixel>,
-    ) {
+    fn write(&mut self, Overwrite(value): &Overwrite<P>) {
+        self.data.fill(value.clone());
+    }
+}
+
+impl<T, P> ImageMut<Apply<'_, P>> for SliceBased<T>
+where
+    T: ops::DerefMut<Target = [P]>,
+    P: Clone,
+{
+    fn write_pixel(&mut self, (x, y): (u32, u32), Apply(value): &Apply<P>) {
+        if x >= self.width || y >= self.height {
+            return;
+        }
+        let index = (x + y * self.width) as usize;
+        if let Some(pixel) = self.data.get_mut(index) {
+            *pixel = value(pixel.clone());
+        }
+    }
+
+    fn write_horizontal_line(&mut self, (x, y): (u32, u32), total: u32, Apply(value): &Apply<P>) {
         if x >= self.width || y >= self.height {
             return;
         }
         let start = (x + y * self.width) as usize;
         let end = ((x + total).min(self.width) + y * self.width) as usize;
         if let Some(slice) = self.data.get_mut(start..end) {
-            slice
-                .iter_mut()
-                .for_each(|pixel| *pixel = function(pixel.clone()));
+            slice.iter_mut().for_each(|p| *p = value(p.clone()));
         }
     }
 
-    fn set(&mut self, value: Self::Pixel) {
-        self.data.fill(value);
-    }
-
-    fn modify(&mut self, function: Modify<Self::Pixel>) {
-        self.data
-            .iter_mut()
-            .for_each(|pixel| *pixel = function(pixel.clone()));
+    fn write(&mut self, Apply(value): &Apply<P>) {
+        self.data.iter_mut().for_each(|p| *p = value(p.clone()));
     }
 }
 
 #[cfg(test)]
 mod test {
+    use crate::strategy;
+
     use super::*;
 
     #[test]
@@ -167,7 +170,7 @@ mod test {
         let data = &mut data as &mut [u8];
         let mut slice_based = super::SliceBased::new(data, 16).unwrap();
 
-        slice_based.set(0x80);
+        slice_based.write(&strategy::overwrite(0x80));
 
         assert!(slice_based.data().iter().all(|v| *v == 0x80));
     }

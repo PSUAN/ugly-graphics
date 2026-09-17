@@ -6,7 +6,7 @@ use ugly_graphics::operation::scanline::rectangle::filled::FilledRectangle;
 use ugly_graphics::operation::scanline::rectangle::outline::OutlineRectangle;
 use ugly_graphics::operation::stamp::Stamp;
 use ugly_graphics::painter::Painter;
-use ugly_graphics::strategy::{Strategy, apply, overwrite};
+use ugly_graphics::strategy::{self, apply, overwrite};
 use ugly_graphics::view::cropped::Cropped;
 use ugly_graphics::view::flipped::Flipped;
 use ugly_graphics::view::rotated::Rotated;
@@ -112,10 +112,10 @@ fn rectangles() {
 
     let delta = b'#' - b' ';
     let apply = |v| v + delta;
-    let rectangle = OutlineRectangle::new((14, 1), (1, 6), Strategy::Apply(&apply));
+    let rectangle = OutlineRectangle::new((14, 1), (1, 6), strategy::apply(&apply));
     painter.draw(rectangle);
 
-    let rectangle = FilledRectangle::new((3, 3), (12, 4), Strategy::Overwrite(b'+'));
+    let rectangle = FilledRectangle::new((3, 3), (12, 4), strategy::overwrite(b'+'));
     painter.draw(rectangle);
 
     let raw = [

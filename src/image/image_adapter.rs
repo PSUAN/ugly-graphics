@@ -3,11 +3,12 @@
 //! ```rust
 //! # use ugly_graphics::image::image_adapter::Adapter;
 //! # use ugly_graphics::image::ImageMut;
+//! # use ugly_graphics::strategy;
 //! # use image::{ImageBuffer, Rgb};
 //! fn main() {
 //!     let mut image = ImageBuffer::new(320, 320);
 //!     let mut adapter = Adapter::new(&mut image);
-//!     adapter.set_pixel((1, 1), Rgb([0xff, 0xff, 0xff]));
+//!     adapter.write_pixel((1, 1), &strategy::overwrite(Rgb([0xff, 0xff, 0xff])));
 //! }
 //! ```
 
@@ -17,7 +18,7 @@ use core::ops::{Deref, DerefMut};
 
 use image::ImageBuffer;
 
-use crate::strategy::Modify;
+use crate::strategy::{Apply, Overwrite};
 
 use super::{Dimensions, Image, ImageMut};
 
@@ -82,55 +83,54 @@ where
     }
 }
 
-impl<P, C> ImageMut for Adapter<&mut ImageBuffer<P, C>>
+impl<P, C> ImageMut<Overwrite<P>> for Adapter<&mut ImageBuffer<P, C>>
 where
     P: image::Pixel,
     C: DerefMut<Target = [P::Subpixel]>,
 {
-    type Pixel = P;
-
-    fn set_pixel(&mut self, (x, y): (u32, u32), value: Self::Pixel) {
+    fn write_pixel(&mut self, (x, y): (u32, u32), Overwrite(value): &Overwrite<P>) {
         if let Some(pixel) = self.buffer.get_pixel_mut_checked(x, y) {
-            *pixel = value;
+            *pixel = *value;
         }
     }
 
-    fn modify_pixel(&mut self, (x, y): (u32, u32), function: Modify<Self::Pixel>) {
-        if let Some(pixel) = self.buffer.get_pixel_mut_checked(x, y) {
-            *pixel = function(*pixel);
-        }
-    }
-
-    fn set_horizontal_line(&mut self, (x, y): (u32, u32), total: u32, value: Self::Pixel) {
+    fn write_horizontal_line(&mut self, (x, y): (u32, u32), total: u32, value: &Overwrite<P>) {
         let (width, heignt) = self.dimensions();
         if y >= heignt {
             return;
         }
         for x in x..(x + total).min(width) {
-            self.set_pixel((x, y), value);
+            self.write_pixel((x, y), value);
         }
     }
 
-    fn modify_horizontal_line(
-        &mut self,
-        (x, y): (u32, u32),
-        total: u32,
-        function: Modify<Self::Pixel>,
-    ) {
+    fn write(&mut self, Overwrite(value): &Overwrite<P>) {
+        self.buffer.pixels_mut().for_each(|p| *p = *value);
+    }
+}
+
+impl<P, C> ImageMut<Apply<'_, P>> for Adapter<&mut ImageBuffer<P, C>>
+where
+    P: image::Pixel,
+    C: DerefMut<Target = [P::Subpixel]>,
+{
+    fn write_pixel(&mut self, (x, y): (u32, u32), Apply(value): &Apply<P>) {
+        if let Some(pixel) = self.buffer.get_pixel_mut_checked(x, y) {
+            *pixel = value(*pixel);
+        }
+    }
+
+    fn write_horizontal_line(&mut self, (x, y): (u32, u32), total: u32, value: &Apply<P>) {
         let (width, heignt) = self.dimensions();
         if y >= heignt {
             return;
         }
         for x in x..(x + total).min(width) {
-            self.modify_pixel((x, y), function);
+            self.write_pixel((x, y), value);
         }
     }
 
-    fn set(&mut self, value: Self::Pixel) {
-        self.buffer.pixels_mut().for_each(|p| *p = value);
-    }
-
-    fn modify(&mut self, function: Modify<Self::Pixel>) {
-        self.buffer.pixels_mut().for_each(|p| *p = function(*p));
+    fn write(&mut self, Apply(value): &Apply<P>) {
+        self.buffer.pixels_mut().for_each(|p| *p = value(*p));
     }
 }

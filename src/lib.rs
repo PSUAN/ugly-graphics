@@ -26,7 +26,7 @@
 //! # use ugly_graphics::operation::scanline::rectangle::filled::FilledRectangle;
 //! # use ugly_graphics::operation::scanline::rectangle::outline::OutlineRectangle;
 //! # use ugly_graphics::painter::Painter;
-//! # use ugly_graphics::strategy::Strategy;
+//! # use ugly_graphics::strategy;
 //! #
 //! # fn main() {
 //!     // Create a sprite to store our data.
@@ -39,19 +39,19 @@
 //!     {
 //!         let delta = b'#' - b' ';
 //!         let apply = |v| v + delta;
-//!         let rectangle = OutlineRectangle::new((14, 1), (1, 9), Strategy::Apply(&apply));
+//!         let rectangle = OutlineRectangle::new((14, 1), (1, 9), strategy::apply(&apply));
 //!         painter.draw(rectangle);
 //!     }
 //!
 //!     // Draw a filled rectangle using the `Overwrite` strategy.
 //!     {
-//!         let rectangle = FilledRectangle::new((3, 3), (12, 7), Strategy::Overwrite(b'+'));
+//!         let rectangle = FilledRectangle::new((3, 3), (12, 7), strategy::overwrite(b'+'));
 //!         painter.draw(rectangle);
 //!     }
 //!
 //!     // Draw a line using the `Overwrite` strategy.
 //!     {
-//!         let line = Line::new((3, 3), (12, 7), Strategy::Overwrite(b'o'));
+//!         let line = Line::new((3, 3), (12, 7), strategy::overwrite(b'o'));
 //!         painter.draw(line);
 //!     }
 //!

@@ -17,7 +17,7 @@ fn main() -> io::Result<()> {
         [(10, 210), (160, 300), (310, 20)],
         overwrite(Rgb([0xff, 0x80, 0x00])),
     );
-    painter.draw(triangle); // 5
+    painter.draw(triangle);
 
     let mut path = env::current_exe()?;
     path.set_extension("png");

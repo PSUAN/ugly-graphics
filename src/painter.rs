@@ -1,22 +1,21 @@
-//! [`Painter`] is a handle to the stored [`ImageMut`].
+//! [`Painter`] is a handle to the stored [`ImageWrite`] or [`ImageModify`].
 //!
 //! It provides basic API for pixel modification.
 
 use core::ops::Range;
 
-use crate::image::ImageMut;
+use crate::image::{Dimensions, ImageMut};
 use crate::operation::Operation;
-use crate::strategy::Strategy;
 
-/// An [`ImageMut`] wrapper.
-pub struct Painter<'a, P> {
-    target: &'a mut dyn ImageMut<Pixel = P>,
+/// An [`ImageWrite`] or [`ImageModify`] wrapper.
+pub struct Painter<T> {
+    target: T,
     offset: (i32, i32),
 }
 
-impl<'a, P> Painter<'a, P> {
+impl<T> Painter<T> {
     /// Create new [`Painter`] instance.
-    pub fn new(target: &'a mut dyn ImageMut<Pixel = P>) -> Self {
+    pub fn new(target: T) -> Self {
         let offset = (0, 0);
         Self { target, offset }
     }
@@ -27,14 +26,11 @@ impl<'a, P> Painter<'a, P> {
     }
 }
 
-impl<'a, P> Painter<'a, P>
-where
-    P: Clone,
-{
+impl<T> Painter<T> {
     /// Draw the provided `operation` on this [`Painter`] instance.
     pub fn draw<O>(&mut self, operation: O) -> O::Output
     where
-        O: Operation<P>,
+        O: Operation<T>,
     {
         let mut region = DrawRegion { painter: self };
         operation.draw_on(&mut region)
@@ -42,23 +38,26 @@ where
 }
 
 /// A region to perform drawing operations on.
-pub struct DrawRegion<'p, 't, P> {
-    painter: &'p mut Painter<'t, P>,
+pub struct DrawRegion<'p, T> {
+    painter: &'p mut Painter<T>,
 }
 
-impl<'p, 't, P> DrawRegion<'p, 't, P> {
+impl<'p, T> DrawRegion<'p, T> {
     /// Get draw zone origin and dimensions.
-    pub fn draw_zone(&self) -> ((i32, i32), (u32, u32)) {
+    pub fn draw_zone(&self) -> ((i32, i32), (u32, u32))
+    where
+        T: Dimensions,
+    {
         let (offset_x, offset_y) = self.painter.offset;
         ((-offset_x, -offset_y), self.painter.target.dimensions())
     }
 
-    /// Apply the provided `strategy` on the `(x, y)` positions.
+    /// Apply the provided `writer` on the `(x, y)` positions.
     ///
     /// Fails silently.
-    pub fn pixel(&mut self, (x, y): (i32, i32), strategy: &Strategy<P>)
+    pub fn pixel<W>(&mut self, (x, y): (i32, i32), writer: &W)
     where
-        P: Clone,
+        T: ImageMut<W>,
     {
         let (offset_x, offset_y) = self.painter.offset;
         let (x, y) = (x + offset_x, y + offset_y);
@@ -66,20 +65,17 @@ impl<'p, 't, P> DrawRegion<'p, 't, P> {
         if let Ok(x) = x.try_into()
             && let Ok(y) = y.try_into()
         {
-            match strategy {
-                Strategy::Overwrite(value) => self.painter.target.set_pixel((x, y), value.clone()),
-                Strategy::Apply(function) => self.painter.target.modify_pixel((x, y), function),
-            }
+            self.painter.target.write_pixel((x, y), writer);
         }
     }
 
-    /// Apply the provided `strategy` on the range `x` at horizontal position
+    /// Apply the provided `writer` on the range `x` at horizontal position
     /// `y`.
     ///
     /// Fails silently.
-    pub fn horizontal_line(&mut self, x: Range<i32>, y: i32, strategy: &Strategy<P>)
+    pub fn horizontal_line<W>(&mut self, x: Range<i32>, y: i32, writer: &W)
     where
-        P: Clone,
+        T: ImageMut<W>,
     {
         let (offset_x, offset_y) = self.painter.offset;
         let (x, y) = ((x.start + offset_x)..(x.end + offset_x), y + offset_y);
@@ -92,18 +88,9 @@ impl<'p, 't, P> DrawRegion<'p, 't, P> {
             let total = (x.end - x.start) as u32;
             let x = x.start as u32;
 
-            match strategy {
-                Strategy::Overwrite(value) => {
-                    self.painter
-                        .target
-                        .set_horizontal_line((x, y), total, value.clone())
-                }
-                Strategy::Apply(function) => {
-                    self.painter
-                        .target
-                        .modify_horizontal_line((x, y), total, function)
-                }
-            }
+            self.painter
+                .target
+                .write_horizontal_line((x, y), total, writer);
         }
     }
 }

@@ -1,6 +1,6 @@
 //! Pixel storage abstractions.
 
-use crate::strategy::Modify;
+use crate::strategy::{Apply, Overwrite};
 
 pub mod slice_based;
 pub mod sprite;
@@ -70,74 +70,48 @@ where
 }
 
 /// A pixel container providing pixel modification operations.
-pub trait ImageMut: Dimensions {
-    /// Stored pixel data.
-    type Pixel;
-
-    /// Overwrite a pixel at the given `position`.
+pub trait ImageMut<W> {
+    /// Write pixel at the given `position`.
     ///
     /// May fail silently if out of bounds or due to any other
     /// implementation-specific case.
-    fn set_pixel(&mut self, position: (u32, u32), value: Self::Pixel);
+    fn write_pixel(&mut self, position: (u32, u32), writer: &W);
 
-    /// Overwrite a pixel at the given `position` using the provided `function`
-    /// to compute new value.
-    ///
-    /// May fail silently if out of bounds or due to any other
-    /// implementation-specific case.
-    fn modify_pixel(&mut self, position: (u32, u32), function: Modify<Self::Pixel>);
+    /// Write a `total` amount of pixels starting at the given `position`.
+    fn write_horizontal_line(&mut self, position: (u32, u32), total: u32, writer: &W);
 
-    /// Overwrite a `total` amount of pixels starting at the given `position`.
-    fn set_horizontal_line(&mut self, position: (u32, u32), total: u32, value: Self::Pixel);
-
-    /// Overwrite a `total` amount of pixels starting at the given `position`
-    /// using the provided `function` to compute new values.
-    fn modify_horizontal_line(
-        &mut self,
-        position: (u32, u32),
-        total: u32,
-        function: Modify<Self::Pixel>,
-    );
-
-    /// Overwrite all pixels with the given `value`.
-    fn set(&mut self, value: Self::Pixel);
-
-    /// Modify each pixel using the provided `function` to compute new values.
-    fn modify(&mut self, function: Modify<Self::Pixel>);
+    /// Write to every pixel.
+    fn write(&mut self, writer: &W);
 }
 
-impl<T> ImageMut for &mut T
+impl<T, W> ImageMut<W> for &mut T
 where
-    T: ImageMut + ?Sized,
+    T: ImageMut<W> + ?Sized,
 {
-    type Pixel = T::Pixel;
-
-    fn set_pixel(&mut self, position: (u32, u32), value: Self::Pixel) {
-        ImageMut::set_pixel(*self, position, value);
+    fn write_pixel(&mut self, position: (u32, u32), writer: &W) {
+        ImageMut::write_pixel(*self, position, writer);
     }
 
-    fn modify_pixel(&mut self, position: (u32, u32), function: Modify<Self::Pixel>) {
-        ImageMut::modify_pixel(*self, position, function);
+    fn write_horizontal_line(&mut self, position: (u32, u32), total: u32, writer: &W) {
+        ImageMut::write_horizontal_line(*self, position, total, writer);
     }
 
-    fn set_horizontal_line(&mut self, position: (u32, u32), plus: u32, value: Self::Pixel) {
-        ImageMut::set_horizontal_line(*self, position, plus, value);
+    fn write(&mut self, writer: &W) {
+        ImageMut::write(*self, writer);
     }
+}
 
-    fn modify_horizontal_line(
-        &mut self,
-        position: (u32, u32),
-        plus: u32,
-        function: Modify<Self::Pixel>,
-    ) {
-        ImageMut::modify_horizontal_line(*self, position, plus, function);
-    }
+/// An [`ImageMut`] that supports both [`Overwrite`] and [`Apply`] operations.
+pub trait ImageMutFull<'a, P>:
+    ImageMut<Overwrite<P>> + ImageMut<Apply<'a, P>> + Dimensions
+where
+    P: 'a,
+{
+}
 
-    fn set(&mut self, value: Self::Pixel) {
-        ImageMut::set(*self, value);
-    }
-
-    fn modify(&mut self, function: Modify<Self::Pixel>) {
-        ImageMut::modify(*self, function);
-    }
+impl<'a, T, P> ImageMutFull<'a, P> for T
+where
+    P: 'a,
+    T: ImageMut<Overwrite<P>> + ImageMut<Apply<'a, P>> + Dimensions,
+{
 }

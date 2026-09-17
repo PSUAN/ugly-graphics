@@ -1,8 +1,9 @@
 //! [`Compute`] operation applied to the entire painter.
 
+use crate::image::{Dimensions, ImageMut};
 use crate::operation::Operation;
 use crate::painter::DrawRegion;
-use crate::strategy::apply;
+use crate::strategy::{self, Apply};
 
 /// An operation to be applied to every pixel of a painter.
 #[derive(Clone, Copy)]
@@ -17,17 +18,20 @@ impl<'a, P> Compute<'a, P> {
     }
 }
 
-impl<'a, P> Operation<P> for Compute<'a, P>
+impl<'a, T, P> Operation<T> for Compute<'a, P>
 where
-    P: Clone,
+    T: for<'b> ImageMut<Apply<'b, P>> + Dimensions,
 {
     type Output = ();
 
-    fn draw_on(self, painter: &mut DrawRegion<'_, '_, P>) -> Self::Output {
+    fn draw_on(self, painter: &mut DrawRegion<'_, T>) -> Self::Output {
         let ((start_x, start_y), (width, height)) = painter.draw_zone();
         for y in start_x..height as i32 {
             for x in start_y..width as i32 {
-                painter.pixel((x as _, y as _), &apply(&|v| (self.action)((x, y), v)));
+                painter.pixel(
+                    (x as _, y as _),
+                    &strategy::apply(&|v| (self.action)((x, y), v)),
+                );
             }
         }
     }

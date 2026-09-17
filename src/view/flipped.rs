@@ -1,7 +1,6 @@
 //! The [`Flipped`] view allows to flip coordinates along single axis.
 
 use crate::image::{Dimensions, Image, ImageMut};
-use crate::strategy::Modify;
 
 /// The flip direction.
 #[derive(Clone, Copy, Debug)]
@@ -93,57 +92,33 @@ where
     }
 }
 
-impl<T> ImageMut for Flipped<T>
+impl<T, W> ImageMut<W> for Flipped<T>
 where
-    T: ImageMut,
+    T: ImageMut<W> + Dimensions,
 {
-    type Pixel = T::Pixel;
-
-    fn set_pixel(&mut self, position: (u32, u32), value: Self::Pixel) {
+    fn write_pixel(&mut self, position: (u32, u32), writer: &W) {
         if let Some(position) = transform(self.direction, self.target.dimensions(), position) {
-            self.target.set_pixel(position, value);
+            self.target.write_pixel(position, writer);
         }
     }
 
-    fn modify_pixel(&mut self, position: (u32, u32), function: Modify<Self::Pixel>) {
-        if let Some(position) = transform(self.direction, self.target.dimensions(), position) {
-            self.target.modify_pixel(position, function);
-        }
-    }
-
-    fn set_horizontal_line(&mut self, position: (u32, u32), total: u32, value: Self::Pixel) {
+    fn write_horizontal_line(&mut self, position: (u32, u32), total: u32, writer: &W) {
         if let Some(((x, y), total)) =
             transform_scan(self.direction, self.target.dimensions(), position, total)
         {
-            self.target.set_horizontal_line((x, y), total, value);
+            self.target.write_horizontal_line((x, y), total, writer);
         }
     }
 
-    fn modify_horizontal_line(
-        &mut self,
-        position: (u32, u32),
-        total: u32,
-        function: Modify<Self::Pixel>,
-    ) {
-        if let Some(((x, y), total)) =
-            transform_scan(self.direction, self.target.dimensions(), position, total)
-        {
-            self.target.modify_horizontal_line((x, y), total, function);
-        }
-    }
-
-    fn set(&mut self, value: Self::Pixel) {
-        self.target.set(value);
-    }
-
-    fn modify(&mut self, function: Modify<Self::Pixel>) {
-        self.target.modify(function);
+    fn write(&mut self, writer: &W) {
+        self.target.write(writer);
     }
 }
 
 #[cfg(test)]
 mod test {
     use crate::image::sprite::Sprite;
+    use crate::strategy;
 
     use super::*;
 
@@ -178,9 +153,9 @@ mod test {
         let mut sprite = Sprite::<u8, 4, 4>::from_copies(0x00);
         let mut flipped = Flipped::horizontal(&mut sprite);
 
-        flipped.set_horizontal_line((0, 1), 2, 0x20);
-        flipped.set_horizontal_line((2, 2), 4, 0x30);
-        flipped.set_horizontal_line((1, 3), 2, 0x40);
+        flipped.write_horizontal_line((0, 1), 2, &strategy::overwrite(0x20));
+        flipped.write_horizontal_line((2, 2), 4, &strategy::overwrite(0x30));
+        flipped.write_horizontal_line((1, 3), 2, &strategy::overwrite(0x40));
 
         let expected = Sprite::from_raw([
             [0x00; 4],

@@ -16,7 +16,7 @@ pub use bitvec;
 use bitvec::slice::BitSlice;
 
 use crate::image::{Dimensions, Image, ImageMut};
-use crate::strategy::Modify;
+use crate::strategy::{Apply, Overwrite};
 
 /// An adapter over `T`.
 ///
@@ -96,43 +96,20 @@ impl Image for Adapter<&mut BitSlice> {
     }
 }
 
-impl ImageMut for Adapter<&mut BitSlice> {
-    type Pixel = bool;
-
-    fn set_pixel(&mut self, (x, y): (u32, u32), value: Self::Pixel) {
+impl ImageMut<Overwrite<bool>> for Adapter<&mut BitSlice> {
+    fn write_pixel(&mut self, (x, y): (u32, u32), Overwrite(value): &Overwrite<bool>) {
         if x >= self.width || y >= self.height {
             return;
         }
         let index = (x + y * self.width) as usize;
-        self.data.set(index, value);
+        self.data.set(index, *value);
     }
 
-    fn modify_pixel(&mut self, (x, y): (u32, u32), function: Modify<Self::Pixel>) {
-        if x >= self.width || y >= self.height {
-            return;
-        }
-        let index = (x + y * self.width) as usize;
-        if let Some(mut pixel) = self.data.get_mut(index) {
-            *pixel = function(*pixel);
-        }
-    }
-
-    fn set_horizontal_line(&mut self, (x, y): (u32, u32), total: u32, value: Self::Pixel) {
-        if x >= self.width || y >= self.height {
-            return;
-        }
-        let start = (x + y * self.width) as usize;
-        let end = ((x + total).min(self.width) + y * self.width) as usize;
-        if let Some(slice) = self.data.get_mut(start..end) {
-            slice.fill(value);
-        }
-    }
-
-    fn modify_horizontal_line(
+    fn write_horizontal_line(
         &mut self,
         (x, y): (u32, u32),
         total: u32,
-        function: Modify<Self::Pixel>,
+        Overwrite(value): &Overwrite<bool>,
     ) {
         if x >= self.width || y >= self.height {
             return;
@@ -140,19 +117,45 @@ impl ImageMut for Adapter<&mut BitSlice> {
         let start = (x + y * self.width) as usize;
         let end = ((x + total).min(self.width) + y * self.width) as usize;
         if let Some(slice) = self.data.get_mut(start..end) {
-            slice
-                .iter_mut()
-                .for_each(|mut pixel| *pixel = function(*pixel));
+            slice.fill(*value);
         }
     }
 
-    fn set(&mut self, value: Self::Pixel) {
-        self.data.fill(value);
+    fn write(&mut self, Overwrite(value): &Overwrite<bool>) {
+        self.data.fill(*value);
+    }
+}
+
+impl ImageMut<Apply<'_, bool>> for Adapter<&mut BitSlice> {
+    fn write_pixel(&mut self, (x, y): (u32, u32), Apply(value): &Apply<bool>) {
+        if x >= self.width || y >= self.height {
+            return;
+        }
+        let index = (x + y * self.width) as usize;
+        if let Some(mut pixel) = self.data.get_mut(index) {
+            *pixel = value(*pixel);
+        }
     }
 
-    fn modify(&mut self, function: Modify<Self::Pixel>) {
+    fn write_horizontal_line(
+        &mut self,
+        (x, y): (u32, u32),
+        total: u32,
+        Apply(value): &Apply<bool>,
+    ) {
+        if x >= self.width || y >= self.height {
+            return;
+        }
+        let start = (x + y * self.width) as usize;
+        let end = ((x + total).min(self.width) + y * self.width) as usize;
+        if let Some(slice) = self.data.get_mut(start..end) {
+            slice.iter_mut().for_each(|mut p| *p = value(*p));
+        }
+    }
+
+    fn write(&mut self, Apply(value): &Apply<bool>) {
         self.data
             .iter_mut()
-            .for_each(|mut pixel| *pixel = function(*pixel));
+            .for_each(|mut pixel| *pixel = value(*pixel));
     }
 }
