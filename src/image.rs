@@ -102,16 +102,12 @@ where
 }
 
 /// An [`ImageMut`] that supports both [`Overwrite`] and [`Apply`] operations.
-pub trait ImageMutFull<'a, P>:
-    ImageMut<Overwrite<P>> + ImageMut<Apply<'a, P>> + Dimensions
-where
-    P: 'a,
+pub trait ImageMutFull<P>:
+    ImageMut<Overwrite<P>> + for<'a> ImageMut<Apply<'a, P>> + Dimensions
 {
 }
 
-impl<'a, T, P> ImageMutFull<'a, P> for T
-where
-    P: 'a,
-    T: ImageMut<Overwrite<P>> + ImageMut<Apply<'a, P>> + Dimensions,
+impl<T, P> ImageMutFull<P> for T where
+    T: ImageMut<Overwrite<P>> + for<'a> ImageMut<Apply<'a, P>> + Dimensions
 {
 }
